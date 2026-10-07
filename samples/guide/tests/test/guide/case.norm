@@ -9,7 +9,7 @@ import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.withFxRuntime
-import ui.fx.kit.internal.utilRequireButton
+import ui.fx.native.Button
 import ui.theme.ThemeManager
 import ui.theme.ThemeDefinition
 import ui.theme.Color
@@ -31,12 +31,18 @@ Void mountsGuideAndRunsNativeActions() {
         application.root(fxHandle(renderer.node()))
         application.later(() {
           try {
-            utilRequireButton(arg0: application.scene(), arg1: "保存")!!.fire()
+            switch application.scene().lookup("#notes-save") {
+              case Button save { save.fire() }
+              case _ { throw Exception(message: "Save action did not mount") }
+            }
             renderer.render(notes)
             require(condition: notes.notes.size() == 1 && notes.notes[0] == "first" && notes.draft == "", message: "Native save updates the note list and input")
             notes.selected = 1
             renderer.render(notes)
-            utilRequireButton(arg0: application.scene(), arg1: "深色")!!.fire()
+            switch application.scene().lookup("#notes-theme") {
+              case Button toggle { toggle.fire() }
+              case _ { throw Exception(message: "Theme action did not mount") }
+            }
             renderer.render(notes)
             require(condition: notes.dark, message: "Native settings action changes theme state")
             notes.selected = 0

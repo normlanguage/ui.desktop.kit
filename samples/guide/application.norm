@@ -48,7 +48,7 @@ class Notes implements Widget {
         Row(gap: 10.0) {
           Input(placeholder: "输入笔记", value: Binding<String>(
             read: () { draft }, write: (String next) { draft = next }), submit: this.save)
-          Button(text: "保存", action: this.save, enabled: !draft.isBlank)
+          Button(key: NodeKey.Named("notes-save"), text: "保存", action: this.save, enabled: !draft.isBlank)
         }
         ForEach<String>(items: notes, identity: (String note) { ValueKey<String>(note) },
           child: (String note) { Text(note) })
@@ -56,7 +56,7 @@ class Notes implements Widget {
       Tab(title: "设置", key: NodeKey.Named("settings"), content: UiProvider(
         configuration: UiConfiguration(fontSize: 16.0), child: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("局部字号与全局主题")
-          Button(text: if dark { "浅色" } else { "深色" }, tone: Tone.Neutral,
+          Button(key: NodeKey.Named("notes-theme"), text: if dark { "浅色" } else { "深色" }, tone: Tone.Neutral,
             appearance: Appearance.Soft, action: () {
               dark = !dark
               theme.setMode(if dark { ThemeMode.Dark } else { ThemeMode.Light })
