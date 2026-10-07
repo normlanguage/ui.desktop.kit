@@ -44,10 +44,10 @@ jobs:
         with:
           module-path: ui/fx/kit
           cache-directory: ~/.norm/cache/packages/github
-      - name: Verify theme rendering
+      - name: Verify JavaFX components and theme rendering
         shell: pwsh
         run: |
-          ./gradlew.bat themeRenderingTest '-PuiRoot=.tmp/ui' --console=plain
+          ./gradlew.bat test '-PuiRoot=.tmp/ui' --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify component lifecycle and gallery
         shell: bash
