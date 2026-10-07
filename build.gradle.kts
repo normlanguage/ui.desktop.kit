@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.normlanguage"
-version = "1"
+version = "2"
 
 repositories { mavenCentral() }
 
@@ -33,23 +33,44 @@ tasks.withType<JavaCompile>().configureEach {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
 }
-tasks.processResources {
-    from(providers.gradleProperty("uiRoot").orElse("../ui").map { "$it/ui" }) { include("layouts.norm", "elements.norm"); into("norm-source/ui") }
-    from("samples/gallery") { include("**/*.norm"); exclude("tests/**"); into("norm-source/samples/gallery") }
-    from("ui/fx/kit") { include("*.norm"); exclude("module.norm"); into("norm-source/ui/fx/kit") }
+val gallery = sourceSets.create("gallery") {
+    java.srcDir("samples/gallery/java")
+    resources.srcDir("samples/gallery/resources")
+    compileClasspath += sourceSets.main.get().output + configurations.runtimeClasspath.get()
+    runtimeClasspath += output + compileClasspath
+}
+sourceSets.test { compileClasspath += gallery.output; runtimeClasspath += gallery.output }
+val galleryJar = tasks.register<Jar>("galleryJar") {
+    archiveBaseName.set("ui-fx-gallery")
+    archiveVersion.set("1")
+    includeEmptyDirs = false
+    from(gallery.output)
+    from("samples/gallery") { include("**/*.norm"); exclude("tests/**", "module.norm"); into("norm-source/samples/gallery") }
+    from("ui/fx/kit") { include("**/*.norm"); exclude("module.norm"); exclude("tests/**"); into("norm-source/ui/fx/kit") }
+    val uiRoot = providers.gradleProperty("uiRoot").orElse("")
+    doFirst {
+        require(uiRoot.get().isNotBlank()) { "galleryJar requires -PuiRoot=<ui source repository>" }
+        for (source in listOf("layouts.norm", "elements.norm")) {
+            require(file("${uiRoot.get()}/ui/$source").isFile) { "Missing gallery source: ${uiRoot.get()}/ui/$source" }
+        }
+    }
+    from(uiRoot.map { "$it/ui" }) { include("layouts.norm", "elements.norm"); into("norm-source/ui") }
+}
+tasks.withType<Jar>().configureEach { from("LICENSE") { into("META-INF") } }
+val generateThemeFixtures = tasks.register<Exec>("generateThemeFixtures") {
+    workingDir(projectDir)
+    val norm = providers.environmentVariable("NORM_EXECUTABLE").orElse("norm")
+    commandLine(norm.get(), "run", "samples/fixtures")
+    providers.gradleProperty("normHome").orNull?.let { home ->
+        environment("JAVA_TOOL_OPTIONS", System.getenv("JAVA_TOOL_OPTIONS").orEmpty() + " -Duser.home=\"$home\"")
+    }
 }
 tasks.withType<Test>().configureEach {
+    if (!providers.gradleProperty("skipThemeFixtures").isPresent) { dependsOn(generateThemeFixtures) }
+
     useJUnitPlatform()
     jvmArgs("--enable-native-access=ALL-UNNAMED")
     testLogging { events("passed", "skipped", "failed") }
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform {
-        if (!providers.gradleProperty("testSource").isPresent) {
-            excludeTags("theme-rendering")
-        }
-    }
 }
 
 tasks.register<Test>("themeRenderingTest") {
@@ -62,7 +83,20 @@ tasks.withType<AbstractArchiveTask>().configureEach {
     isReproducibleFileOrder = true
 }
 publishing {
-    publications { create<MavenPublication>("library") { from(components["java"]) } }
+    publications {
+        create<MavenPublication>("library") { from(components["java"]) }
+        create<MavenPublication>("gallery") {
+            artifactId = "ui-fx-gallery"
+            version = "1"
+            artifact(galleryJar)
+            pom.withXml {
+                val dependency = asNode().appendNode("dependencies").appendNode("dependency")
+                dependency.appendNode("groupId", project.group)
+                dependency.appendNode("artifactId", "ui-fx-kit")
+                dependency.appendNode("version", project.version)
+            }
+        }
+    }
     repositories { maven { url = uri(layout.buildDirectory.dir("repository")) } }
 }
 tasks.register<Copy>("normDependencies") {

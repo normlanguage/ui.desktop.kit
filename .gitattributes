@@ -1,0 +1,4 @@
+LICENSE text eol=lf
+*.norm text eol=lf
+*.css text eol=lf
+*.json text eol=lf

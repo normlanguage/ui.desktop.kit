@@ -1,6 +1,7 @@
 package ui.fx.kit.test.inputs
 
 import std.testing.Test
+import std.core.Exception
 import ui.Widget
 import ui.Binding
 import ui.Column as UiColumn
@@ -64,4 +65,16 @@ Void selectKeepsTypedOptionsAndSelection() {
   Widget select = Select<String>(options: ["北京", "上海", "广州"], value: value)
   value.value = "上海"
   require(condition: chosen.value == "上海", message: "typed select binding accepts options")
+}
+
+@Test
+Void formRejectsDuplicateFieldNames() {
+  var name = Cell<String>(value: "Ada")
+  var text = Binding<String>(read: () { name.value }, write: (next) { name.value = next })
+  var field = FormField<String>(name: "name", state: FormFieldState<String>(initial: name.value),
+    control: Input(placeholder: "Name", value: text), value: text, validator: (current) { true }, error: "")
+  var rejected = false
+  try { Form(fields: [field, field], onSubmit: () {}) }
+  catch Exception error { rejected = error.message == "Duplicate form field: name" }
+  require(condition: rejected, message: "duplicate field names fail before rendering")
 }

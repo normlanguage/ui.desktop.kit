@@ -25,7 +25,7 @@ class UtilCaptureTest extends FxTest {
                 stage.set(window);
                 window.setScene(new Scene(root, 700, 500));
                 window.show();
-                Util.capture(window.getScene(), destination, 700, 500,
+                dev.normlanguage.ui.gallery.GallerySupport.capture(window.getScene(), destination, 700, 500,
                         () -> completed.complete(""), completed::complete);
             });
             assertEquals("", completed.get(10, TimeUnit.SECONDS));

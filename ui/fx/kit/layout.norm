@@ -2,7 +2,7 @@ package ui.fx.kit
 
 import ui.Widget
 import ui.NodeKey
-import javafx.Orientation
+import ui.fx.native.Orientation
 import ui.fx.kit.internal.Divider as DividerControl
 import ui.fx.kit.internal.Splitter as SplitterControl
 import ui.fx.kit.internal.dividerNew

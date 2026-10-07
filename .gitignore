@@ -5,3 +5,5 @@ build/
 *.iml
 .tmp/
 samples/native/*.exe
+
+ui/fx/kit/resources/META-INF/licenses/ui.fx.kit/LICENSE

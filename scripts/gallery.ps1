@@ -1,25 +1,20 @@
 param(
+    [string]$UiRoot,
     [switch]$Verify,
-    [string]$UiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui'),
-    [string]$UiFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.fx'),
-    [string]$DiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../di'),
-    [string]$JavaFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../javafx'),
-    [string]$ThemeRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.theme')
+    [string]$NormHome = (Join-Path (Split-Path $PSScriptRoot -Parent) '.norm-home')
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-& (Join-Path $PSScriptRoot 'prepare.ps1') -UiRoot $UiRoot -UiFxRoot $UiFxRoot -DiRoot $DiRoot -JavaFxRoot $JavaFxRoot -ThemeRoot $ThemeRoot
-if ($LASTEXITCODE -ne 0) { throw 'Component preparation failed' }
-
-$sample = Join-Path $root 'samples/gallery'
+& (Join-Path $PSScriptRoot 'prepare.ps1') -NormHome $NormHome -UiRoot $UiRoot
+$previous = $env:JAVA_TOOL_OPTIONS
 Push-Location $root
 try {
-    if ($Verify) {
-        & (Join-Path $PSScriptRoot 'norm.ps1') test $sample
-    } else {
-        & (Join-Path $PSScriptRoot 'norm.ps1') run $sample
-    }
-    if ($LASTEXITCODE -ne 0) { throw 'Norm gallery failed' }
+    $env:JAVA_TOOL_OPTIONS = "$previous --enable-native-access=ALL-UNNAMED -Duser.home=`"$NormHome`""
+    $executable = if ($env:NORM_EXECUTABLE) { $env:NORM_EXECUTABLE } else { 'norm' }
+    if ($Verify) { & $executable test samples/gallery }
+    else { & $executable run samples/gallery }
+    if ($LASTEXITCODE -ne 0) { throw 'Gallery failed' }
 } finally {
+    $env:JAVA_TOOL_OPTIONS = $previous
     Pop-Location
 }

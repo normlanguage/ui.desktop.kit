@@ -1,0 +1,28 @@
+package gallery
+
+import ui.Widget
+import ui.NodeKey
+import ui.fx.nativeComponent
+import ui.fx.native.StackPane
+import ui.fx.native.stackPaneNew
+
+value Surface implements Widget {
+  Widget content
+  String styleClass = ""
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<StackPane>(kind: "gallery.Surface", create: () { stackPaneNew() },
+      node: (control) { control }, update: (control, scope) {
+        control.getStyleClass()!!.clear()
+        control.getStyleClass()!!.add(styleClass)
+        return
+      }, children: [content], arrange: (control, nodes) {
+        var current = control.getChildren()!!
+        if current.size() != 1 || current.get(0) != nodes[0] {
+          current.clear()
+          current.add(nodes[0])
+        }
+        return
+      }, close: (control) { control.getChildren()!!.clear() }, key: key)
+  }
+}

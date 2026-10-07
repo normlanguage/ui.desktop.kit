@@ -24,9 +24,9 @@ import ui.fx.kit.App
 import ui.fx.kit.Button
 import ui.fx.kit.Input
 import ui.Dock
-import ui.fx.kit.Surface
+import gallery.Surface
 import ui.fx.kit.Typography
-import ui.fx.kit.resourceText
+import gallery.internal.gallerySupportResourceText
 
 Void main() {
   var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#1677FF"), neutral: Color(hex: "#808080")))
@@ -116,7 +116,7 @@ class Gallery implements Widget {
 }
 
 String sourceDeclaration(String file, String symbol) {
-  var source = resourceText("/norm-source/" + file)
+  var source = gallerySupportResourceText("/norm-source/" + file)!!
   var active = false
   var result = ""
   for line : source.split(separator: "\n") {
