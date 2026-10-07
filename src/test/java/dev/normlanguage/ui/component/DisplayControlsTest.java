@@ -9,8 +9,11 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.scene.control.TreeItem;
 import javafx.beans.property.SimpleStringProperty;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DisplayControlsTest extends FxTest {
@@ -108,15 +111,26 @@ class DisplayControlsTest extends FxTest {
 
     @Test void treeLoadsChildrenAndSupportsChecks() throws Exception {
         var holder = new java.util.concurrent.atomic.AtomicReference<Tree<String>>();
+        var children = new CompletableFuture<List<String>>();
+        var projected = new CompletableFuture<Void>();
         fx(() -> {
             var tree = new Tree<String>("root");
             holder.set(tree);
             new Scene(new StackPane(tree));
-            tree.setLazyChildren(value -> CompletableFuture.completedFuture(value.equals("root") ? List.of("child") : List.of()));
-            tree.setCheckable(true);
             tree.getRoot().setExpanded(false);
+            tree.getRoot().getChildren().addListener((ListChangeListener<TreeItem<String>>) change -> {
+                while (change.next()) if (change.wasAdded()) projected.complete(null);
+            });
+            tree.loadErrorProperty().addListener((observable, previous, error) -> {
+                if (error != null) projected.completeExceptionally(error);
+            });
+            tree.setLazyChildren(value -> value.equals("root") ? children : CompletableFuture.completedFuture(List.of()));
+            tree.setCheckable(true);
             tree.getRoot().setExpanded(true);
         });
+        assertFalse(projected.isDone());
+        children.complete(List.of("child"));
+        projected.get(20, TimeUnit.SECONDS);
         fx(() -> {
             var tree = holder.get();
             assertEquals("child", tree.getRoot().getChildren().getFirst().getValue());

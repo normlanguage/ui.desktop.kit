@@ -14,6 +14,9 @@ Void everyComponentHasLiveExampleAndSource() {
     names.add(page.name)
     var source = sourceDeclaration(file: page.source, symbol: page.symbol)
     require(condition: source.startsWith(prefix: "class " + page.symbol), message: "Documentation reads the live example class")
+    var api = sourceDeclaration(file: page.api, symbol: page.apiSymbol)
+    require(condition: api.startsWith(prefix: "value " + page.apiSymbol) || api.startsWith(prefix: "class " + page.apiSymbol),
+      message: "Documentation reads the public declaration from its owning module")
     require(condition: !page.summary.isBlank && !page.whenToUse.isBlank, message: "Every page explains usage")
   }
 }

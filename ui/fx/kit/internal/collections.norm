@@ -1,0 +1,100 @@
+package ui.fx.kit.internal
+
+import java.base.util.JavaList
+
+JavaList<T> hostItems<T>(List<T> values) {
+  var result = utilEmptyItems<T>()!!
+  for value : values { result.add(value) }
+  result
+}
+
+JavaList<T?> hostNullableItems<T>(List<T> values) {
+  List<T?> projected = []
+  for value : values { projected.add(value) }
+  hostItems(projected)
+}
+
+List<T> selectionItems<T>(JavaList<T?>? values) {
+  List<T> selected = []
+  if values != null {
+    var iterator = values.iterator()!!
+    for iterator.hasNext() {
+      var value = iterator.next()
+      if value != null { selected.add(value) }
+    }
+  }
+  selected
+}
+
+CascaderItem<T?> cascaderItem<T>(T value, String label, List<CascaderItem<T?>> children, Boolean lazy = false) {
+  JavaList<CascaderItem<T?>> copied = hostItems(children)
+  cascaderItemNew<T?>(arg0: value, arg1: label, arg2: copied, arg3: lazy)
+}
+
+Cascader<T?> cascader<T>(List<CascaderItem<T?>> items) {
+  cascaderNew(hostItems(items))
+}
+
+Transfer<T?> transfer<T>(List<T> items) {
+  transferNew(hostNullableItems(items))
+}
+
+Select<T?> select<T>(List<T> items) {
+  inputAdapterSelect(hostNullableItems(items))!!
+}
+
+Void updateSelectOptions<T>(Select<T?> control, List<T> items) {
+  inputAdapterSelectOptions(arg0: control, arg1: hostNullableItems(items))
+}
+
+SelectMultiple<T?> selectMultiple<T>(List<T> items) {
+  inputAdapterSelectMultiple(hostNullableItems(items))!!
+}
+
+Void updateMultipleOptions<T>(SelectMultiple<T?> control, List<T> items) {
+  inputAdapterMultipleOptions(arg0: control, arg1: hostNullableItems(items))
+}
+
+SelectSearchable<T?> selectSearchable<T>(List<T> items) {
+  inputAdapterSelectSearchable(hostNullableItems(items))!!
+}
+
+Void updateSearchableOptions<T>(SelectSearchable<T?> control, List<T> items) {
+  inputAdapterSearchableOptions(arg0: control, arg1: hostNullableItems(items))
+}
+
+Void cascaderSelectPath<T>(Cascader<T?> control, List<T> path) {
+  control.selectPath(hostNullableItems(path))
+}
+
+Void updateCascaderOptions<T>(Cascader<T?> control, List<CascaderItem<T?>> options) {
+  inputAdapterCascaderOptions(arg0: control, arg1: hostItems(options))
+}
+
+TreeSelect<T?> treeSelect<T>(List<CascaderItem<T?>> options) {
+  inputAdapterTreeSelect(hostItems(options))!!
+}
+
+Void updateTreeOptions<T>(TreeSelect<T?> control, List<CascaderItem<T?>> options) {
+  inputAdapterTreeOptions(arg0: control, arg1: hostItems(options))
+}
+
+Void updateTransferOptions<T>(Transfer<T?> control, List<T> options) {
+  inputAdapterTransferOptions(arg0: control, arg1: hostNullableItems(options))
+}
+
+Segmented<T?> segmented<T>(List<T> items) {
+  segmentedNew(hostNullableItems(items))
+}
+
+Tour tour(List<TourStep> steps) {
+  tourNew(hostItems(steps))
+}
+
+Void autoCompleteSuggestions(AutoComplete control, List<String> values) {
+  control.setSuggestions(hostItems(values))
+}
+
+Void mentionsSuggestions(Mentions control, List<String> values) {
+  control.setSuggestions(hostItems(values))
+}

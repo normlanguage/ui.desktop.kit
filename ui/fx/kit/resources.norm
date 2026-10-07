@@ -1,0 +1,5 @@
+package ui.fx.kit
+
+import ui.fx.kit.internal.utilResourceText
+
+String resourceText(String path) { utilResourceText(path)!! }

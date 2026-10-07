@@ -45,8 +45,6 @@ public record ComponentConfig(String fontFamily, double fontSize, Density densit
                 + ".text-field { -fx-padding: " + (space / 2) + "px " + (space * 1.25) + "px; }"
                 + ".text-area, .text-area .content { -fx-background-radius: " + radius + "px; -fx-border-radius: " + radius + "px; }"
                 + ".norm-card, .norm-popover, .norm-message { -fx-background-radius: " + (radius + 2)
-                + "px; -fx-border-radius: " + (radius + 2) + "px; -fx-padding: " + (3 * space) + "px; }"
-                + ".norm-space { -fx-spacing: " + space + "px; }"
-                + ".norm-flex, .norm-grid { -fx-hgap: " + space + "px; -fx-vgap: " + space + "px; }";
+                + "px; -fx-border-radius: " + (radius + 2) + "px; -fx-padding: " + (3 * space) + "px; }";
     }
 }

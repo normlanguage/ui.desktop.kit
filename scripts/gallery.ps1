@@ -1,15 +1,14 @@
 param(
     [switch]$Verify,
     [string]$UiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui'),
-    [string]$UiFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui-fx'),
-    [string]$FxGraphicsRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../fx-graphics'),
-    [string]$FxControlsRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../fx-controls'),
-    [string]$ThemeRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../theme'),
-    [string]$JdkRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../jdk-base')
+    [string]$UiFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.fx'),
+    [string]$DiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../di'),
+    [string]$JavaFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../javafx'),
+    [string]$ThemeRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.theme')
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-& (Join-Path $PSScriptRoot 'prepare.ps1') -UiRoot $UiRoot -UiFxRoot $UiFxRoot -FxGraphicsRoot $FxGraphicsRoot -FxControlsRoot $FxControlsRoot -ThemeRoot $ThemeRoot -JdkRoot $JdkRoot
+& (Join-Path $PSScriptRoot 'prepare.ps1') -UiRoot $UiRoot -UiFxRoot $UiFxRoot -DiRoot $DiRoot -JavaFxRoot $JavaFxRoot -ThemeRoot $ThemeRoot
 if ($LASTEXITCODE -ne 0) { throw 'Component preparation failed' }
 
 $sample = Join-Path $root 'samples/gallery'

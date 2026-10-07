@@ -38,11 +38,16 @@ jobs:
           - ValueLinkTest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: normlanguage/ui
+          ref: 8c37621cb864e1eaf8376dc44e926727e9e15ffd
+          path: .tmp/ui
       - uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: '25'
+          distribution: oracle
+          java-version: 25.0.2
       - uses: gradle/actions/setup-gradle@v4
       - name: Verify ${{ matrix.suite }}
         shell: pwsh
-        run: .\gradlew.bat test -PtestSource=${{ matrix.suite }} --tests '*${{ matrix.suite }}' --console=plain
+        run: .\gradlew.bat test '-PuiRoot=.tmp/ui' -PtestSource=${{ matrix.suite }} --tests '*${{ matrix.suite }}' --console=plain

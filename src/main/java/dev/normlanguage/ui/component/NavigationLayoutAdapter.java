@@ -16,38 +16,18 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 
 public final class NavigationLayoutAdapter {
     private NavigationLayoutAdapter() {}
 
-    public static Flex flex() { return new Flex(); }
-    public static Space space() { return new Space(); }
     public static Splitter splitter() { return new Splitter(); }
     public static Steps createSteps() { return new Steps(); }
 
     public static void buttonAction(Button control, Runnable action) {
         Util.requireFxThread();
         control.setOnAction(event -> action.run());
-    }
-
-    public static void flex(Flex control, List<Node> nodes, List<Double> grow) {
-        Util.requireFxThread();
-        if (nodes.size() != grow.size()) throw new IllegalArgumentException("Flex children and weights must be paired");
-        control.getChildren().setAll(nodes);
-        for (int index = 0; index < nodes.size(); index++) control.setGrow(nodes.get(index), grow.get(index));
-    }
-
-    public static void masonry(Masonry control, List<Node> nodes) {
-        Util.requireFxThread();
-        control.getChildren().setAll(nodes);
-    }
-
-    public static void space(Space control, List<Node> nodes) {
-        Util.requireFxThread();
-        control.getChildren().setAll(nodes);
     }
 
     public static void splitter(Splitter control, List<Node> nodes, double dividerPosition) {
@@ -59,27 +39,6 @@ public final class NavigationLayoutAdapter {
     public static void clearMenu(Menu control) {
         Util.requireFxThread();
         control.getMenus().clear();
-    }
-
-    public static void grid(Grid control, List<Node> nodes, List<Integer> spans,
-                            List<Double> minimumWidths, List<Integer> columns) {
-        Util.requireFxThread();
-        Objects.requireNonNull(control);
-        if (nodes.size() != spans.size() || minimumWidths.size() != columns.size())
-            throw new IllegalArgumentException("Grid items and breakpoints must be paired");
-        var responsive = new TreeMap<Double, Integer>();
-        responsive.put(0.0, 1);
-        for (int index = 0; index < minimumWidths.size(); index++) {
-            double width = minimumWidths.get(index);
-            int count = columns.get(index);
-            if (!Double.isFinite(width) || width < 0 || count < 1)
-                throw new IllegalArgumentException("Invalid grid breakpoint");
-            responsive.put(width, count);
-        }
-        for (int span : spans) if (span < 1) throw new IllegalArgumentException("Span must be positive");
-        control.getChildren().clear();
-        control.replaceResponsiveColumns(responsive);
-        for (int index = 0; index < nodes.size(); index++) control.addItem(nodes.get(index), spans.get(index));
     }
 
     public static AnchorHost anchorHost() { return new AnchorHost(); }

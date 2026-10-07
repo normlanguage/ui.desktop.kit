@@ -1,0 +1,76 @@
+package ui.fx.kit
+
+import ui.Widget
+import ui.NodeKey
+import ui.ThemeProvider
+import ui.UiConfiguration
+import ui.theme.ThemeSource
+import ui.fx.themeCss
+import ui.fx.kit.internal.App as AppControl
+import ui.fx.kit.internal.ConfigProvider as ProviderControl
+import ui.fx.kit.internal.componentConfigNew
+import ui.fx.kit.internal.Density
+import ui.fx.kit.internal.ComponentConfig
+import ui.fx.kit.internal.ContentOwnership
+import ui.fx.kit.internal.appNew
+import ui.fx.kit.internal.configProviderNew
+
+value App implements Widget {
+  ThemeSource theme
+  Widget content
+  KitConfiguration? config = null
+  String? stylesheet = null
+  NodeKey? key = null
+
+  Widget build() {
+    ThemeProvider(source: theme, child: nativeComponent<AppControl>(kind: "ui.fx.kit.App",
+      create: () { appNew(arg0: null, arg1: ContentOwnership.EXTERNAL) },
+      node: (control) { control }, update: (control, scope) {
+        control.setConfig(null)
+        control.setStylesheet(stylesheet)
+      }, children: [content],
+      arrange: (control, nodes) { control.setContent(nodes[0]) },
+      applyConfiguration: (control, configuration) { control.setConfig(projectConfiguration(configuration: configuration, config: config, inherited: control.getEffectiveConfig()!!)) },
+      applyTheme: (control, snapshot) { if snapshot != null { control.publishTheme(themeCss(snapshot)) } else { control.clearTheme() } },
+      close: (control) { control.close() }, key: key))
+  }
+}
+
+value ConfigProvider implements Widget {
+  Widget content
+  ThemeSource? theme = null
+  KitConfiguration? config = null
+  String? stylesheet = null
+  NodeKey? key = null
+
+  Widget build() {
+    var child = nativeComponent<ProviderControl>(kind: "ui.fx.kit.ConfigProvider",
+      create: () { configProviderNew(ContentOwnership.EXTERNAL) },
+      node: (control) { control }, update: (control, scope) {
+        control.setConfig(null)
+        control.setStylesheet(stylesheet)
+      }, children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      applyConfiguration: (control, configuration) { control.setConfig(projectConfiguration(configuration: configuration, config: config, inherited: control.getEffectiveConfig()!!)) },
+      applyTheme: (control, snapshot) { if snapshot != null { control.publishTheme(themeCss(snapshot)) } else { control.clearTheme() } },
+      close: (control) { control.close() }, key: key)
+    ThemeProvider(source: theme, child: child)
+  }
+}
+
+enum ComponentDensity { Compact, Standard, Spacious }
+
+value KitConfiguration {
+  Double radius = 6.0
+  ComponentDensity density = ComponentDensity.Standard
+}
+
+private ComponentConfig? projectConfiguration(UiConfiguration configuration, KitConfiguration? config, ComponentConfig inherited) {
+  if config == null { return null }
+  Density density = switch config.density {
+      case Compact { break Density.COMPACT }
+      case Standard { break Density.STANDARD }
+      case Spacious { break Density.SPACIOUS }
+  }
+  componentConfigNew(arg0: configuration.fontFamily, arg1: configuration.fontSize, arg2: density,
+    arg3: config.radius, arg4: configuration.motionEnabled, arg5: inherited.locale())
+}

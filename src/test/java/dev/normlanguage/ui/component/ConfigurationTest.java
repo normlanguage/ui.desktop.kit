@@ -11,6 +11,51 @@ import java.util.Locale;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ConfigurationTest extends FxTest {
+    @Test void projectedUiPreferencesOverrideAncestorAndReleaseSubscriptions() throws Exception {
+        fx(() -> {
+            var label = new Label("content");
+            var local = new ConfigProvider(label);
+            var outer = new ConfigProvider(new javafx.scene.layout.VBox(local));
+            var configured = new ComponentConfig("Ancestor", 18, ComponentConfig.Density.COMPACT,
+                    9, true, Locale.FRANCE);
+            outer.setConfig(configured);
+            var scene = new Scene(outer);
+            var updates = new java.util.concurrent.atomic.AtomicInteger();
+            var connection = new ConfigurationConnection(label, updates::incrementAndGet);
+            connection.connect();
+            KitEnvironment.apply(label, "Projected", 20, false);
+            var projected = ConfigurationConnection.resolve(label);
+            assertEquals("Projected", projected.fontFamily());
+            assertEquals(20, projected.fontSize());
+            assertFalse(projected.motionEnabled());
+            assertEquals(configured.density(), projected.density());
+            assertEquals(configured.radius(), projected.radius());
+            assertEquals(configured.locale(), projected.locale());
+            assertNull(local.getConfig());
+            outer.setConfig(new ComponentConfig("Changed ancestor", 22, ComponentConfig.Density.SPACIOUS,
+                    13, true, Locale.GERMANY));
+            var inheritedUpdate = ConfigurationConnection.resolve(label);
+            assertEquals(13, inheritedUpdate.radius());
+            assertEquals(ComponentConfig.Density.SPACIOUS, inheritedUpdate.density());
+            assertEquals(Locale.GERMANY, inheritedUpdate.locale());
+            assertEquals("Projected", inheritedUpdate.fontFamily());
+            assertFalse(inheritedUpdate.motionEnabled());
+            var motion = new Motion(label);
+            motion.animate(Motion.STANDARD, new javafx.animation.KeyValue(label.opacityProperty(), 0.4));
+            assertEquals(0.4, label.getOpacity());
+            assertTrue(updates.get() > 1);
+            var before = updates.get();
+            label.getProperties().put("unrelated", true);
+            assertEquals(before, updates.get());
+            connection.close();
+            KitEnvironment.clear(label);
+            assertEquals(outer.getConfig(), ConfigurationConnection.resolve(label));
+            assertEquals(before, updates.get());
+            motion.close();
+            outer.close();
+        });
+    }
+
     @Test void clearingLocalThemeDisconnectsAndRestoresInheritance() throws Exception {
         fx(() -> {
             var provider = new ConfigProvider(new Label("Content"));

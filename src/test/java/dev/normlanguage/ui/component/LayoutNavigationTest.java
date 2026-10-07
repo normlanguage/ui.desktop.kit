@@ -15,48 +15,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 class LayoutNavigationTest extends FxTest {
-    @Test void layoutsKeepNativeChildrenAndUsefulSizing() throws Exception {
+    @Test void splitterAndFloatingActionsOwnTheirNativeContent() throws Exception {
         fx(() -> {
-            var first = new Label("one");
-            var second = new Label("two");
-            var flex = new Flex(first, second);
-            flex.setOrientation(Orientation.VERTICAL);
-            assertEquals(2, flex.getChildren().size());
-            flex.setWrap(false);
-            flex.setOrientation(Orientation.HORIZONTAL);
-            flex.setAlignment(Pos.CENTER_LEFT);
-            flex.setGrow(first, 1);
-            flex.resize(300, 40);
-            flex.layout();
-            assertTrue(first.getWidth() > first.prefWidth(-1));
-            assertEquals(1, flex.getGrow(first));
-            flex.setWrap(true);
-            var grid = new Grid();
-            var cell = new Label("cell");
-            grid.add(cell, 0, 0, 2, 1);
-            assertEquals(2, javafx.scene.layout.GridPane.getColumnSpan(cell));
-            var responsive = new Grid();
-            var itemOne = new Label("one");
-            var itemTwo = new Label("two");
-            responsive.setResponsiveColumns(200, 2);
-            responsive.addItem(itemOne, 1);
-            responsive.addItem(itemTwo, 1);
-            responsive.resize(250, 100);
-            assertEquals(2, responsive.getCurrentColumns());
-            assertEquals(1, javafx.scene.layout.GridPane.getColumnIndex(itemTwo));
-            responsive.resize(150, 100);
-            assertEquals(1, javafx.scene.layout.GridPane.getRowIndex(itemTwo));
-            var layout = new Layout();
-            layout.setCenter(grid);
-            assertSame(grid, layout.getCenter());
-            var masonry = new Masonry();
-            masonry.getChildren().addAll(new Label("a"), new Label("b"));
-            masonry.resize(300, 300);
-            masonry.layout();
-            assertTrue(masonry.prefHeight(300) > 0);
             var split = new Splitter(new Label("left"), new Label("right"));
             assertEquals(2, split.getItems().size());
-            assertEquals(2, new Space(new Label(), new Label()).getChildren().size());
             assertNotNull(new Divider());
             var floatLayer = new StackPane();
             var floatButton = new FloatButton("+").attachTo(floatLayer);

@@ -1,43 +1,44 @@
 package gallery
 
+import ui.CrossAlignment
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column as Vertical
-import ui.kit.Row as Horizontal
+import ui.Text
+import ui.Column as Vertical
+import ui.Row as Horizontal
 import ui.Binding
-import jdk.base.LocalDate
-import jdk.base.localDateOf
-import ui.kit.Button as ActionButton
-import ui.kit.Avatar
-import ui.kit.Badge
-import ui.kit.Calendar
-import ui.kit.Card
-import ui.kit.Carousel
-import ui.kit.Collapse
-import ui.kit.Description
-import ui.kit.Descriptions
-import ui.kit.Empty
-import ui.kit.Image
-import ui.kit.ListView
-import ui.kit.Listy
-import ui.kit.QRCode
-import ui.kit.Segmented
-import ui.kit.Statistic
-import ui.kit.Table
-import ui.kit.TableColumn as DataColumn
-import ui.kit.TableSort
-import ui.kit.Tag
-import ui.kit.Timeline
-import ui.kit.TimelineEntry
-import ui.kit.Tree
+import java.base.time.LocalDate
+import java.base.time.localDateOf
+import ui.fx.kit.Button as ActionButton
+import ui.fx.kit.Avatar
+import ui.fx.kit.Badge
+import ui.fx.kit.Calendar
+import ui.fx.kit.Card
+import ui.fx.kit.Carousel
+import ui.fx.kit.Collapse
+import ui.fx.kit.Description
+import ui.fx.kit.Descriptions
+import ui.fx.kit.Empty
+import ui.fx.kit.Image
+import ui.fx.kit.ListView
+import ui.fx.kit.Listy
+import ui.fx.kit.QRCode
+import ui.fx.kit.Segmented
+import ui.fx.kit.Statistic
+import ui.fx.kit.Table
+import ui.fx.kit.TableColumn as DataColumn
+import ui.fx.kit.TableSort
+import ui.fx.kit.Tag
+import ui.fx.kit.Timeline
+import ui.fx.kit.TimelineEntry
+import ui.fx.kit.Tree
 
 class AvatarExample implements Widget {
   Boolean photo = false
 
   Widget build() {
-    Vertical {
-      Horizontal {Avatar(text: "林安", source: if photo { "dev/normlanguage/ui/component/gallery/images/alpine-lake.png" } else { null }) 
-        Avatar(text: "MK")  Avatar(text: "UI")} 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Horizontal(gap: 10.0) {Avatar(text: "林安", source: if photo { "dev/normlanguage/ui/component/gallery/images/alpine-lake.png" } else { null })
+        Avatar(text: "MK")  Avatar(text: "UI")}
       ActionButton(text: if photo { "显示文字头像" } else { "显示图片头像" }, action: () { photo = !photo })
     }
   }
@@ -47,9 +48,9 @@ class BadgeExample implements Widget {
   Integer unread = 3
 
   Widget build() {
-    Vertical {
-      Horizontal {Badge(content: Text("收件箱"), count: unread)  Badge(content: Text("通知"), count: 0)} 
-      ActionButton(text: "收到一条消息", action: () { unread = unread + 1 }) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Horizontal(gap: 10.0) {Badge(content: Text("收件箱"), count: unread)  Badge(content: Text("通知"), count: 0)}
+      ActionButton(text: "收到一条消息", action: () { unread = unread + 1 })
       ActionButton(text: "全部已读", action: () { unread = 0 })
     }
   }
@@ -60,9 +61,9 @@ class CalendarExample implements Widget {
 
   Widget build() {
     Binding<LocalDate?> date = Binding<LocalDate?>(read: () { selected }, write: (LocalDate? next) { selected = next })
-    Vertical {
-      Calendar(selected: date) 
-      Text("已选日期：" + if selected == null { "未选择" } else { selected!!.toString()!! }) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Calendar(selected: date)
+      Text("已选日期：" + if selected == null { "未选择" } else { selected!!.toString()!! })
       ActionButton(text: "回到示例日期", action: () { selected = localDateOf(arg0: 2026, arg1: 10, arg2: 2)!! })
     }
   }
@@ -72,9 +73,9 @@ class CardExample implements Widget {
   Boolean detailed = false
 
   Widget build() {
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Card(title: "项目概览", content: Text(if detailed { "本周完成 18 项，待处理 4 项" } else { "本周完成 18 项" }),
-        bottom: Text("数据更新于今天")) 
+        bottom: Text("数据更新于今天"))
       ActionButton(text: if detailed { "收起数据" } else { "查看详情" }, action: () { detailed = !detailed })
     }
   }
@@ -84,11 +85,11 @@ class CarouselExample implements Widget {
   Integer index = 0
 
   Widget build() {
-    Vertical {
-      Carousel(slides: [Text("第一张 · 欢迎使用 Norm"), Text("第二张 · 主题自动适配"), Text("第三张 · 原生 JavaFX")], index: index) 
-      Horizontal {
-        ActionButton(text: "上一张", action: () { index = if index == 0 { 2 } else { index - 1 } }) 
-        Text("第 " + (index + 1).toString() + " 张") 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Carousel(slides: [Text("第一张 · 欢迎使用 Norm"), Text("第二张 · 主题自动适配"), Text("第三张 · 原生 JavaFX")], index: index)
+      Horizontal(gap: 10.0) {
+        ActionButton(text: "上一张", action: () { index = if index == 0 { 2 } else { index - 1 } })
+        Text("第 " + (index + 1).toString() + " 张")
         ActionButton(text: "下一张", action: () { index = (index + 1) % 3 })
       }
     }
@@ -100,8 +101,8 @@ class CollapseExample implements Widget {
 
   Widget build() {
     Binding<Boolean> open = Binding<Boolean>(read: () { expanded }, write: (Boolean next) { expanded = next })
-    Vertical {
-      Collapse(title: "配送信息", content: Text("预计明天送达 · 可在订单页追踪物流"), expanded: open) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Collapse(title: "配送信息", content: Text("预计明天送达 · 可在订单页追踪物流"), expanded: open)
       Text(if expanded { "详细信息已展开" } else { "点击标题展开详细信息" })
     }
   }
@@ -111,12 +112,12 @@ class DescriptionsExample implements Widget {
   Boolean active = true
 
   Widget build() {
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Descriptions(items: [
         Description(label: "名称", content: Text("Norm UI")),
         Description(label: "状态", content: Text(if active { "运行中" } else { "维护中" })),
         Description(label: "环境", content: Text("JavaFX"))
-      ]) 
+      ])
       ActionButton(text: "切换状态", action: () { active = !active })
     }
   }
@@ -126,8 +127,8 @@ class EmptyExample implements Widget {
   Boolean loaded = false
 
   Widget build() {
-    Vertical {
-      if loaded { ListView<String>(items: ["第一条记录", "第二条记录"]) } else { Empty(description: "还没有记录") } 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      if loaded { ListView<String>(items: ["第一条记录", "第二条记录"]) } else { Empty(description: "还没有记录") }
       ActionButton(text: if loaded { "清空数据" } else { "加载示例数据" }, action: () { loaded = !loaded })
     }
   }
@@ -137,8 +138,8 @@ class ImageExample implements Widget {
   Boolean preview = true
 
   Widget build() {
-    Vertical {
-      Image(source: "dev/normlanguage/ui/component/gallery/images/alpine-lake.png", previewable: preview) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Image(source: "dev/normlanguage/ui/component/gallery/images/alpine-lake.png", previewable: preview)
       ActionButton(text: if preview { "关闭点击预览" } else { "启用点击预览" }, action: () { preview = !preview })
     }
   }
@@ -150,9 +151,9 @@ class ListViewExample implements Widget {
 
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
-    Vertical {
-      ListView<String>(items: if extended { ["设计", "开发", "测试", "发布"] } else { ["设计", "开发", "测试"] }, selected: selection) 
-      Text("当前选择：" + if selected == null { "无" } else { selected!! }) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      ListView<String>(items: if extended { ["设计", "开发", "测试", "发布"] } else { ["设计", "开发", "测试"] }, selected: selection)
+      Text("当前选择：" + if selected == null { "无" } else { selected!! })
       ActionButton(text: if extended { "移除发布阶段" } else { "添加发布阶段" }, action: () { extended = !extended })
     }
   }
@@ -164,10 +165,10 @@ class ListyExample implements Widget {
 
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Listy<String>(items: ["记录 01", "记录 02", "记录 03", "记录 04", "记录 05", "记录 06", "记录 07", "记录 08",
-        "记录 09", "记录 10", "记录 11", "记录 12", "记录 13", "记录 14", "记录 15", "记录 16"], rowHeight: height, selected: selection) 
-      Text("当前选择：" + if selected == null { "无" } else { selected!! }) 
+        "记录 09", "记录 10", "记录 11", "记录 12", "记录 13", "记录 14", "记录 15", "记录 16"], rowHeight: height, selected: selection)
+      Text("当前选择：" + if selected == null { "无" } else { selected!! })
       ActionButton(text: if height == 32.0 { "切换宽松行高" } else { "切换紧凑行高" }, action: () { height = if height == 32.0 { 48.0 } else { 32.0 } })
     }
   }
@@ -177,9 +178,9 @@ class QRCodeExample implements Widget {
   Boolean documentation = true
 
   Widget build() {
-    Vertical {
-      QRCode(text: if documentation { "https://normlanguage.org" } else { "https://github.com/normlanguage" }, size: 160) 
-      Text(if documentation { "Norm 主页" } else { "Norm GitHub" }) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      QRCode(text: if documentation { "https://normlanguage.org" } else { "https://github.com/normlanguage" }, size: 160)
+      Text(if documentation { "Norm 主页" } else { "Norm GitHub" })
       ActionButton(text: "切换地址", action: () { documentation = !documentation })
     }
   }
@@ -190,8 +191,8 @@ class SegmentedExample implements Widget {
 
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { period }, write: (String? next) { period = next })
-    Vertical {
-      Segmented<String>(items: ["日", "周", "月"], selected: selection) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Segmented<String>(items: ["日", "周", "月"], selected: selection)
       Text("当前统计周期：" + if period == null { "未选择" } else { period!! })
     }
   }
@@ -201,8 +202,8 @@ class StatisticExample implements Widget {
   Integer completed = 128
 
   Widget build() {
-    Vertical {
-      Statistic(title: "已完成任务", value: completed) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Statistic(title: "已完成任务", value: completed)
       ActionButton(text: "完成一项任务", action: () { completed = completed + 1 })
     }
   }
@@ -216,12 +217,12 @@ class TableExample implements Widget {
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
     Binding<TableSort?> order = Binding<TableSort?>(read: () { sorted }, write: (TableSort? next) { sorted = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Table<String>(rows: if showPending { ["Alice", "Bob", "Charlie"] } else { ["Alice", "Charlie"] },
         columns: [DataColumn<String>(heading: "成员", display: (String row) { row }),
           DataColumn<String>(heading: "角色", display: (String row) { if row == "Alice" { "设计" } else { "开发" } })],
-        selected: selection, sort: order) 
-      Text("选中成员：" + if selected == null { "无" } else { selected!! }) 
+        selected: selection, sort: order)
+      Text("选中成员：" + if selected == null { "无" } else { selected!! })
       Text("排序：" + if sorted == null { "未排序" } else { if sorted!!.descending { "降序" } else { "升序" } })
       ActionButton(text: "反转排序", action: () {
         sorted = TableSort(heading: "成员", descending: if sorted == null { false } else { !sorted!!.descending })
@@ -235,8 +236,8 @@ class TagExample implements Widget {
   Boolean visible = true
 
   Widget build() {
-    Vertical {
-      if visible { Tag(text: "已发布", closable: true, onClose: () { visible = false }) } else { Empty(description: "标签已关闭") } 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      if visible { Tag(text: "已发布", closable: true, onClose: () { visible = false }) } else { Empty(description: "标签已关闭") }
       ActionButton(text: "恢复标签", action: () { visible = true })
     }
   }
@@ -246,10 +247,10 @@ class TimelineExample implements Widget {
   Boolean delivered = false
 
   Widget build() {
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Timeline(entries: [TimelineEntry(time: "09:30", content: Text("订单已创建")),
         TimelineEntry(time: "10:15", content: Text("包裹已发出")),
-        if delivered { TimelineEntry(time: "16:20", content: Text("包裹已送达")) } else { TimelineEntry(time: "待更新", content: Text("运输中")) }]) 
+        if delivered { TimelineEntry(time: "16:20", content: Text("包裹已送达")) } else { TimelineEntry(time: "待更新", content: Text("运输中")) }])
       ActionButton(text: if delivered { "重新模拟配送" } else { "完成配送" }, action: () { delivered = !delivered })
     }
   }
@@ -262,12 +263,12 @@ class TreeExample implements Widget {
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
     Binding<List<String>> checks = Binding<List<String>>(read: () { checked }, write: (List<String> next) { checked = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Tree<String>(root: "项目", children: (String value) {
         if value == "项目" { ["源码", "测试"] }
         else if value == "源码" { ["组件", "主题"] }
         else { [] }
-      }, selected: selection, checkable: true, checked: checks) 
+      }, selected: selection, checkable: true, checked: checks)
       Text("当前节点：" + if selected == null { "无" } else { selected!! })
       Text("已勾选 " + checked.size().toString() + " 项")
       ActionButton(text: "勾选测试节点", action: () { checked = ["测试"] })

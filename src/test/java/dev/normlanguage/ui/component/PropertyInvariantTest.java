@@ -37,12 +37,6 @@ class PropertyInvariantTest extends FxTest {
             steps.getSteps().removeLast();
             assertEquals(0, steps.getCurrentStep());
 
-            var masonry = new Masonry();
-            assertThrows(IllegalArgumentException.class, () -> masonry.minimumColumnWidthProperty().set(0));
-            assertThrows(IllegalArgumentException.class, () -> masonry.gapProperty().set(-1));
-            assertEquals(180, masonry.getMinimumColumnWidth());
-            assertEquals(8, masonry.getGap());
-
             var anchor = new Anchor(new ScrollPane());
             assertThrows(NullPointerException.class, () -> anchor.scrollPaneProperty().set(null));
             assertNotNull(anchor.getScrollPane());

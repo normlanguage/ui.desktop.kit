@@ -1,29 +1,29 @@
 package gallery
 
+import ui.CrossAlignment
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Button
-import ui.kit.Divider
-import ui.kit.Flex
-import ui.kit.FlexItem
-import ui.kit.Grid
-import ui.kit.GridItem
-import ui.kit.GridBreakpoint
-import ui.kit.Layout
-import ui.kit.Masonry
-import ui.kit.Space
-import ui.kit.Splitter
+import ui.Text
+import ui.Column
+import ui.Row
+import ui.fx.kit.Button
+import ui.fx.kit.Divider
+import ui.Flex
+import ui.FlexItem
+import ui.Grid
+import ui.GridItem
+import ui.GridBreakpoint
+import ui.Dock
+import ui.Masonry
+import ui.fx.kit.Splitter
 
 class DividerExample implements Widget {
   private Boolean vertical = false
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if vertical { "改为水平" } else { "改为垂直" },
         action: () { vertical = !vertical })
-      Row {
+      Row(gap: 10.0) {
         Text("账户信息")
         Divider(vertical: vertical)
         Text("安全设置")
@@ -36,13 +36,13 @@ class FlexExample implements Widget {
   private Boolean wrap = false
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if wrap { "保持单行" } else { "启用换行" }, action: () { wrap = !wrap })
       Flex(items: [
         FlexItem(content: Button(text: "主要区域", action: () {}), grow: 2.0),
         FlexItem(content: Button(text: "操作一", action: () {}), grow: 1.0),
         FlexItem(content: Button(text: "操作二", action: () {}), grow: 1.0)
-      ], wrap: wrap)
+      ], wrap: wrap, gap: 8.0)
     }
   }
 }
@@ -61,25 +61,25 @@ class GridExample implements Widget {
       cells.add(GridItem(content: Button(text: "成员", action: () {})))
       cells.add(GridItem(content: Button(text: "文档", action: () {})))
     }
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if expanded { "收起模块" } else { "增加模块" },
         action: () { expanded = !expanded })
       Grid(items: cells, breakpoints: [GridBreakpoint(minimumWidth: 330.0, columns: 2),
-        GridBreakpoint(minimumWidth: 650.0, columns: 3)])
+        GridBreakpoint(minimumWidth: 650.0, columns: 3)], gap: 8.0)
     }
   }
 }
 
-class LayoutExample implements Widget {
+class DockExample implements Widget {
   private Boolean showSidebar = true
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if showSidebar { "隐藏侧栏" } else { "显示侧栏" },
         action: () { showSidebar = !showSidebar })
-      Layout(top: Row { Text("工作台") Text("项目") Text("团队") },
-        left: if showSidebar { Column { Text("概览") Text("任务") Text("成员") } } else { null },
-        center: Column { Text("项目概览") Text("这里展示团队当前的任务和进度") },
+      Dock(top: Row(gap: 10.0) { Text("工作台") Text("项目") Text("团队") },
+        left: if showSidebar { Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("概览") Text("任务") Text("成员") } } else { null },
+        center: Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目概览") Text("这里展示团队当前的任务和进度") },
         bottom: Text("最近更新：今天"))
     }
   }
@@ -90,50 +90,50 @@ class MasonryExample implements Widget {
 
   Widget build() {
     List<Widget> cards = [
-      Column { Text("项目一") Text("需求与范围") },
-      Column { Text("项目二") Text("设计评审") Text("等待反馈") },
-      Column { Text("项目三") Text("开发中") Text("接口与页面") Text("本周交付") },
-      Column { Text("项目四") Text("质量检查") },
-      Column { Text("项目五") Text("计划排期") Text("确认负责人") },
-      Column { Text("项目六") Text("上线准备") },
-      Column { Text("项目七") Text("资料归档") Text("清理待办") },
-      Column { Text("项目八") Text("团队同步") }
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目一") Text("需求与范围") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目二") Text("设计评审") Text("等待反馈") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目三") Text("开发中") Text("接口与页面") Text("本周交付") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目四") Text("质量检查") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目五") Text("计划排期") Text("确认负责人") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目六") Text("上线准备") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目七") Text("资料归档") Text("清理待办") },
+      Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目八") Text("团队同步") }
     ]
     if expanded {
-      cards.add(Column { Text("项目九") Text("新增项目") Text("等待安排") })
-      cards.add(Column { Text("项目十") Text("新增项目") })
+      cards.add(Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目九") Text("新增项目") Text("等待安排") })
+      cards.add(Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("项目十") Text("新增项目") })
     }
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if expanded { "收起新增卡片" } else { "增加卡片" },
         action: () { expanded = !expanded })
-      Masonry(children: cards, minimumColumnWidth: 160.0)
+      Masonry(children: cards, minimumColumnWidth: 160.0, gap: 8.0)
     }
   }
 }
 
-class SpaceExample implements Widget {
+class RowExample implements Widget {
   private Boolean spacious = false
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: if spacious { "紧凑间距" } else { "宽松间距" },
         action: () { spacious = !spacious })
-      Space(children: [
+      Row(children: [
         Button(text: "保存", action: () {}),
         Button(text: "预览", action: () {}),
         Button(text: "分享", action: () {})
-      ], spacing: if spacious { 24.0 } else { 8.0 })
+      ], gap: if spacious { 24.0 } else { 8.0 })
     }
   }
 }
 
 class SplitterExample implements Widget {
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("拖动中间的分隔条，调整两块内容区域")
       Splitter(children: [
-        Column { Text("文件列表") Text("需求文档") Text("设计资源") },
-        Column { Text("预览") Text("选择左侧文件后可在此查看内容") }
+        Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("文件列表") Text("需求文档") Text("设计资源") },
+        Column(cross: CrossAlignment.Stretch, gap: 12.0) { Text("预览") Text("选择左侧文件后可在此查看内容") }
       ])
     }
   }

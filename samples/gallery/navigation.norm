@@ -1,35 +1,36 @@
 package gallery
 
+import ui.CrossAlignment
 import ui.Widget
 import ui.Binding
-import ui.kit.Text
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Button
-import ui.kit.Anchor
-import ui.kit.AnchorSection
-import ui.kit.Breadcrumb
-import ui.kit.BreadcrumbItem
-import ui.kit.Dropdown
-import ui.kit.Menu
-import ui.kit.MenuGroup
-import ui.kit.MenuItem
-import ui.kit.Pagination
-import ui.kit.Steps
-import ui.kit.Tabs
-import ui.kit.Tab
+import ui.Text
+import ui.Column
+import ui.Row
+import ui.fx.kit.Button
+import ui.fx.kit.Anchor
+import ui.fx.kit.AnchorSection
+import ui.fx.kit.Breadcrumb
+import ui.fx.kit.BreadcrumbItem
+import ui.fx.kit.Dropdown
+import ui.fx.kit.Menu
+import ui.fx.kit.MenuGroup
+import ui.fx.kit.MenuItem
+import ui.fx.kit.Pagination
+import ui.fx.kit.Steps
+import ui.fx.kit.Tabs
+import ui.fx.kit.Tab
 
 class AnchorExample implements Widget {
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Anchor(sections: [
-        AnchorSection(title: "概览", content: Column {
+        AnchorSection(title: "概览", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("项目概览") Text("当前有三个进行中的任务") Text("负责人：产品与设计团队")
         }),
-        AnchorSection(title: "进度", content: Column {
+        AnchorSection(title: "进度", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("本周进度") Text("需求已确认") Text("交互稿正在评审") Text("组件示例持续补充")
         }),
-        AnchorSection(title: "下一步", content: Column {
+        AnchorSection(title: "下一步", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("后续安排") Text("完成验收清单") Text("准备发布说明")
         })
       ])
@@ -41,7 +42,7 @@ class BreadcrumbExample implements Widget {
   private String current = "组件"
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Breadcrumb(items: [
         BreadcrumbItem(text: "首页", action: () { current = "首页" }),
         BreadcrumbItem(text: "组件", action: () { current = "组件" }),
@@ -56,9 +57,9 @@ class DropdownExample implements Widget {
   private String choice = "尚未选择"
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("点击更多操作，选择一项")
-      Dropdown(text: "更多操作", content: Column {
+      Dropdown(text: "更多操作", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
         Button(text: "复制链接", action: () { choice = "已复制链接" })
         Button(text: "分享项目", action: () { choice = "已选择分享项目" })
         Button(text: "保存草稿", action: () { choice = "已保存草稿" })
@@ -72,7 +73,7 @@ class MenuExample implements Widget {
   private String selected = "尚未操作"
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Menu(groups: [
         MenuGroup(title: "文件", items: [
           MenuItem(text: "新建", action: () { selected = "新建文件" }),
@@ -93,10 +94,10 @@ class PaginationExample implements Widget {
 
   Widget build() {
     var current = Binding<Integer>(read: () { page }, write: (Integer next) { page = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Pagination(totalItems: 48, pageSize: 8, currentPage: current)
       Text("当前显示第 ${page} 页，每页八条数据")
-      Row {
+      Row(gap: 10.0) {
         Button(text: "第一页", action: () { page = 1 })
         Button(text: "最后一页", action: () { page = 6 })
       }
@@ -109,10 +110,10 @@ class StepsExample implements Widget {
 
   Widget build() {
     var current = Binding<Integer>(read: () { step }, write: (Integer next) { step = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Steps(titles: ["填写信息", "确认内容", "完成"], currentStep: current)
       Text(if step == 2 { "流程已完成" } else { "按顺序推进流程" })
-      Row {
+      Row(gap: 10.0) {
         Button(text: "上一步", enabled: step > 0, action: () { step = step - 1 })
         Button(text: "下一步", enabled: step < 2, action: () { step = step + 1 })
       }
@@ -127,13 +128,13 @@ class TabsExample implements Widget {
   Widget build() {
     var activeTitle = if selected == 0 { "概览" } else if selected == 1 { "成员" } else { "设置" }
     var current = Binding<Integer>(read: () { selected }, write: (Integer next) { selected = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Tabs(tabs: [
-        Tab(title: "概览", content: Column {
+        Tab(title: "概览", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("项目概览与近期动态")
           Button(text: "刷新概览", action: () { actions = actions + 1 })
         }),
-        Tab(title: "成员", content: Column {
+        Tab(title: "成员", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("团队成员与角色")
           Button(text: "邀请成员", action: () { actions = actions + 1 })
         }),

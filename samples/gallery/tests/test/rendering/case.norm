@@ -1,7 +1,7 @@
 package gallery.test.rendering
 
 import std.testing.Test
-import std.filesystem.Path
+import java.base.io.fileNew
 import gallery.Gallery
 import gallery.GalleryPage
 import gallery.galleryPages
@@ -11,11 +11,11 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
-import ui.kit.fx.utilCapture
-import ui.kit.fx.utilRequireButton
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.Color
+import ui.fx.kit.internal.utilCapture
+import ui.fx.kit.internal.utilRequireButton
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
 
 class RenderProgress {
   Integer count = 0
@@ -52,7 +52,7 @@ class CaptureSequence {
     var page = pages[progress.count]
     utilRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: Path(value: "build/screenshots/norm/" + page.name + ".png"), arg2: 1440, arg3: 1000,
+    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/" + page.name + ".png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
         var selected = utilRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!
         if !selected.getStyle()!!.contains(value: "-norm-primary-soft") {
@@ -77,7 +77,7 @@ class CaptureSequence {
     utilRequireButton(arg0: application.scene(), arg1: "Form  表单")!!.fire()
     utilRequireButton(arg0: application.scene(), arg1: "提交")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: Path(value: "build/screenshots/norm/interactions/Form-invalid.png"), arg2: 1440, arg3: 1000,
+    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Form-invalid.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () { application.later(() { this.inspectSourcePage() }) },
       arg5: (String? failure) { this.fail(if failure != null { failure } else { "Form capture failed" }) })
   }
@@ -86,7 +86,7 @@ class CaptureSequence {
     utilRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!.fire()
     utilRequireButton(arg0: application.scene(), arg1: "查看 Norm 源码")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: Path(value: "build/screenshots/norm/interactions/Button-source.png"), arg2: 1440, arg3: 1000,
+    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-source.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
         utilRequireButton(arg0: application.scene(), arg1: "收起源码")
         application.later(() { this.inspectApiPage() })
@@ -97,7 +97,7 @@ class CaptureSequence {
     utilRequireButton(arg0: application.scene(), arg1: "收起源码")!!.fire()
     utilRequireButton(arg0: application.scene(), arg1: "组件 API")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: Path(value: "build/screenshots/norm/interactions/Button-api.png"), arg2: 1440, arg3: 1000,
+    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-api.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
         utilRequireButton(arg0: application.scene(), arg1: "收起 API")
         application.later(() { this.inspectDarkPage() })
@@ -108,7 +108,7 @@ class CaptureSequence {
     utilRequireButton(arg0: application.scene(), arg1: "Table  表格")!!.fire()
     utilRequireButton(arg0: application.scene(), arg1: "深色")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: Path(value: "build/screenshots/norm/interactions/Table-dark.png"), arg2: 1440, arg3: 1000,
+    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Table-dark.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
         utilRequireButton(arg0: application.scene(), arg1: "浅色")
         progress.completed = true

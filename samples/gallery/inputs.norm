@@ -1,45 +1,46 @@
 package gallery
 
+import ui.CrossAlignment
 import ui.Widget
 import ui.Binding
-import ui.kit.Text
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Button
-import ui.kit.Input
-import ui.kit.AutoComplete
-import ui.kit.Cascader
-import ui.kit.CascaderOption
-import ui.kit.Checkbox
-import ui.kit.ColorPicker
-import ui.kit.DatePicker
-import ui.kit.DateRangePicker
-import ui.kit.DateRange
-import ui.kit.Form
-import ui.kit.FormField
-import ui.kit.FormFieldState
-import ui.kit.InputNumber
-import ui.kit.Mentions
-import ui.kit.Radio
-import ui.kit.Rate
-import ui.kit.Select
-import ui.kit.MultipleSelect
-import ui.kit.SearchSelect
-import ui.kit.Slider
-import ui.kit.RangeSlider
-import ui.kit.NumericRange
-import ui.kit.Switch
-import ui.kit.TimePicker
-import ui.kit.Transfer
-import ui.kit.TreeSelect
-import ui.kit.TreeOption
-import ui.kit.Upload
-import jdk.base.LocalDate
-import jdk.base.LocalTime
-import jdk.base.BigDecimal
-import jdk.base.localDateOf
-import jdk.base.localTimeOf
-import jdk.base.bigDecimalNew
+import ui.Text
+import ui.Column
+import ui.Row
+import ui.fx.kit.Button
+import ui.fx.kit.Input
+import ui.fx.kit.AutoComplete
+import ui.fx.kit.Cascader
+import ui.fx.kit.CascaderOption
+import ui.fx.kit.Checkbox
+import ui.fx.kit.ColorPicker
+import ui.fx.kit.DatePicker
+import ui.fx.kit.DateRangePicker
+import ui.fx.kit.DateRange
+import ui.fx.kit.Form
+import ui.fx.kit.FormField
+import ui.fx.kit.FormFieldState
+import ui.fx.kit.InputNumber
+import ui.fx.kit.Mentions
+import ui.fx.kit.Radio
+import ui.fx.kit.Rate
+import ui.fx.kit.Select
+import ui.fx.kit.MultipleSelect
+import ui.fx.kit.SearchSelect
+import ui.fx.kit.Slider
+import ui.fx.kit.RangeSlider
+import ui.fx.kit.NumericRange
+import ui.fx.kit.Switch
+import ui.fx.kit.TimePicker
+import ui.fx.kit.Transfer
+import ui.fx.kit.TreeSelect
+import ui.fx.kit.TreeOption
+import ui.fx.kit.Upload
+import java.base.time.LocalDate
+import java.base.time.LocalTime
+import java.base.math.BigDecimal
+import java.base.time.localDateOf
+import java.base.time.localTimeOf
+import java.base.math.bigDecimalNew
 import std.concurrent.startTask
 import std.concurrent.Task
 import std.core.Unit
@@ -50,7 +51,7 @@ class InputExample implements Widget {
 
   Widget build() {
     var name = Binding<String>(read: () { project }, write: (String next) { project = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("项目名称")
       Input(placeholder: "例如：设计系统", value: name)
       Text(if project == "" { "输入名称后显示预览" } else { "项目：" + project })
@@ -64,7 +65,7 @@ class AutoCompleteExample implements Widget {
 
   Widget build() {
     var selected = Binding<String>(read: () { city }, write: (String next) { city = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("输入城市名称，观察候选项")
       AutoComplete(placeholder: "搜索城市", value: selected,
         suggestions: ["北京", "上海", "广州", "深圳", "杭州"])
@@ -79,7 +80,7 @@ class CascaderExample implements Widget {
 
   Widget build() {
     var selected = Binding<List<String>>(read: () { department }, write: (List<String> next) { department = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择所属团队")
       Cascader<String>(options: [
         CascaderOption(value: "产品", label: "产品", children: [
@@ -102,9 +103,9 @@ class CheckboxExample implements Widget {
   Widget build() {
     var byEmail = Binding<Boolean>(read: () { email }, write: (Boolean next) { email = next })
     var byDesktop = Binding<Boolean>(read: () { desktop }, write: (Boolean next) { desktop = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择通知渠道")
-      Row { Checkbox(text: "邮件", value: byEmail) Checkbox(text: "桌面", value: byDesktop) }
+      Row(gap: 10.0) { Checkbox(text: "邮件", value: byEmail) Checkbox(text: "桌面", value: byDesktop) }
       Text("邮件：" + email.toString() + "，桌面：" + desktop.toString())
       Button(text: "全部开启", action: () { email = true desktop = true })
     }
@@ -116,7 +117,7 @@ class ColorPickerExample implements Widget {
 
   Widget build() {
     var selected = Binding<String>(read: () { color }, write: (String next) { color = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择品牌强调色")
       ColorPicker(hex: selected)
       Text("当前颜色：" + color)
@@ -132,7 +133,7 @@ class DatePickerExample implements Widget {
   Widget build() {
     var selected = Binding<LocalDate?>(read: () { date }, write: (LocalDate? next) { date = next })
     var selectedPeriod = Binding<DateRange>(read: () { period }, write: (DateRange next) { period = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择交付日期")
       DatePicker(value: selected)
       Text("交付：" + if date == null { "未选" } else { date!!.toString()!! })
@@ -153,7 +154,7 @@ class FormExample implements Widget {
   Widget build() {
     var titleValue = Binding<String>(read: () { title }, write: (String next) { title = next })
     var ownerValue = Binding<String>(read: () { owner }, write: (String next) { owner = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("创建任务")
       Form(fields: [
         FormField<String>(name: "标题", state: titleState, control: Input(placeholder: "任务标题", value: titleValue),
@@ -172,7 +173,7 @@ class InputNumberExample implements Widget {
 
   Widget build() {
     var amount = Binding<BigDecimal>(read: () { budget }, write: (BigDecimal next) { budget = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("预算金额")
       InputNumber(value: amount, scale: 2)
       Text("预算：" + budget.toPlainString()!!)
@@ -186,7 +187,7 @@ class MentionsExample implements Widget {
 
   Widget build() {
     var draft = Binding<String>(read: () { message }, write: (String next) { message = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("输入 @ 提及团队成员")
       Mentions(value: draft, suggestions: ["林安", "陈晨", "周一"], placeholder: "给团队留言")
       Text(if message == "" { "尚未留言" } else { "草稿：" + message })
@@ -200,7 +201,7 @@ class RadioExample implements Widget {
 
   Widget build() {
     var selected = Binding<Boolean>(read: () { standard }, write: (Boolean next) { standard = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择标准配送")
       Radio(text: "标准配送", value: selected)
       Text(if standard { "标准配送已选" } else { "尚未选择配送方式" })
@@ -214,7 +215,7 @@ class RateExample implements Widget {
 
   Widget build() {
     var selected = Binding<Integer>(read: () { score }, write: (Integer next) { score = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("给本次体验评分")
       Rate(value: selected)
       Text("评分：" + score.toString() + " / 5")
@@ -232,7 +233,7 @@ class SelectExample implements Widget {
     var selectedPriority = Binding<String?>(read: () { priority }, write: (String? next) { priority = next })
     var selectedPeople = Binding<List<String>>(read: () { assignees }, write: (List<String> next) { assignees = next })
     var selectedReviewer = Binding<String?>(read: () { reviewer }, write: (String? next) { reviewer = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("设置任务优先级")
       Select<String>(options: ["紧急", "普通", "低"], value: selectedPriority)
       Text("优先级：" + if priority == null { "未选" } else { priority!! })
@@ -251,7 +252,7 @@ class SliderExample implements Widget {
   Widget build() {
     var progress = Binding<Double>(read: () { completion }, write: (Double next) { completion = next })
     var range = Binding<NumericRange>(read: () { capacity }, write: (NumericRange next) { capacity = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("调整完成度")
       Slider(value: progress)
       Text("当前完成度：" + completion.toString() + "%")
@@ -267,7 +268,7 @@ class SwitchExample implements Widget {
 
   Widget build() {
     var selected = Binding<Boolean>(read: () { automatic }, write: (Boolean next) { automatic = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("自动保存")
       Switch(text: "自动保存", value: selected)
       Text(if automatic { "修改将自动保存" } else { "修改需手动保存" })
@@ -282,7 +283,7 @@ class TimePickerExample implements Widget {
 
   Widget build() {
     var selected = Binding<LocalTime?>(read: () { meeting }, write: (LocalTime? next) { meeting = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("安排会议开始时间")
       TimePicker(value: selected, minuteStep: 15)
       Text("开始时间：" + if meeting == null { "未选" } else { meeting!!.toString()!! })
@@ -296,7 +297,7 @@ class TransferExample implements Widget {
 
   Widget build() {
     var assigned = Binding<List<String>>(read: () { selected }, write: (List<String> next) { selected = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("将任务移至右侧待办清单")
       Transfer<String>(options: ["设计评审", "接口联调", "回归测试", "上线检查"], value: assigned)
       Text("待办数量：" + selected.size().toString())
@@ -310,7 +311,7 @@ class TreeSelectExample implements Widget {
 
   Widget build() {
     var selected = Binding<String?>(read: () { team }, write: (String? next) { team = next })
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择归属团队")
       TreeSelect<String>(options: [
         TreeOption(value: "产品", children: [TreeOption(value: "设计"), TreeOption(value: "研究")]),
@@ -334,7 +335,7 @@ class UploadExample implements Widget {
   }
 
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("选择文件或拖入上传区")
       Upload(files: files, uploader: (Path file, Function<Void(Double)> progress) {
         this.upload(file: file, progress: progress)

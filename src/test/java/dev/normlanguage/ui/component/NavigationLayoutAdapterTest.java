@@ -21,21 +21,7 @@ class NavigationLayoutAdapterTest extends FxTest {
         });
     }
 
-    @Test void gridReplacesBreakpointsAndPreservesContentNodes() throws Exception {
-        fx(() -> {
-            var grid = new Grid();
-            var first = new Label("first");
-            var second = new Label("second");
-            NavigationLayoutAdapter.grid(grid, List.of(first, second), List.of(1, 1), List.of(0.0, 200.0), List.of(1, 2));
-            grid.resize(250, 80);
-            assertEquals(2, grid.getCurrentColumns());
-            NavigationLayoutAdapter.grid(grid, List.of(second, first), List.of(1, 1), List.of(0.0, 400.0), List.of(1, 3));
-            assertSame(second, grid.getChildren().getFirst());
-            assertEquals(1, grid.getCurrentColumns());
-            grid.resize(450, 80);
-            assertEquals(3, grid.getCurrentColumns());
-        });
-    }
+
 
     @Test void tabsReuseNativeTabsAcrossReorderingAndSelectionIsTwoWay() throws Exception {
         fx(() -> {
@@ -127,18 +113,6 @@ class NavigationLayoutAdapterTest extends FxTest {
         fx(() -> {
             var first = new Label("first");
             var second = new Label("second");
-            var flex = NavigationLayoutAdapter.flex();
-            NavigationLayoutAdapter.flex(flex, List.of(first, second), List.of(1.0, 0.0));
-            assertEquals(1.0, flex.getGrow(first));
-            NavigationLayoutAdapter.flex(flex, List.of(second, first), List.of(0.0, 2.0));
-            assertSame(second, flex.getChildren().getFirst());
-            assertEquals(2.0, flex.getGrow(first));
-            var space = NavigationLayoutAdapter.space();
-            NavigationLayoutAdapter.space(space, List.of(first));
-            assertSame(first, space.getChildren().getFirst());
-            var masonry = new Masonry();
-            NavigationLayoutAdapter.masonry(masonry, List.of(first, second));
-            assertEquals(2, masonry.getChildren().size());
             var splitter = NavigationLayoutAdapter.splitter();
             NavigationLayoutAdapter.splitter(splitter, List.of(first, second), 0.4);
             assertEquals(2, splitter.getItems().size());

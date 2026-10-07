@@ -9,10 +9,10 @@ import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.withFxRuntime
-import ui.kit.fx.utilRequireButton
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.Color
+import ui.fx.kit.internal.utilRequireButton
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
 
 class Progress { Boolean completed = false Boolean closed = false String? failure = null }
 
