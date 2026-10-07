@@ -5,6 +5,6 @@ Module module() {
       dependency(repository: "github", name: "ui", version: 9),
       dependency(repository: "github", name: "ui.theme", version: 3),
       dependency(repository: "norm", name: "java.base", version: 1)],
-    binding: jarBinding(target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-gallery", version: "2", resolution: sha256("04c653d9dc9f790265eb23032e4dd31a5f3a52a6084a83bb22c9035d1c492b0a")),
+    binding: jarBinding(target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-gallery", version: "2", resolution: sha256("84b69748e574b5dfd5a9191caa2efc4dc9187ac1a98d7f49fa50641334f5e1bd")),
       api: [jarType(name: "dev.normlanguage.ui.gallery.GallerySupport", alias: "internal.GallerySupport", members: ["capture", "requireButton", "resourceText"])]))
 }
