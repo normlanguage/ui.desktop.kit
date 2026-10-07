@@ -1,17 +1,17 @@
 package jobs.test.jobs
 
-import ui.fx.withFxRuntime
+import ui.desktop.withFxRuntime
 import ui.theme.ThemeManager
 import ui.theme.ThemeDefinition
 import ui.theme.Color
 import jobs.Jobs
 import jobs.JobStatus
-import ui.fx.FxApplication
+import ui.desktop.FxApplication
 import ui.Renderer
-import ui.fx.JavaFxBackend
-import ui.fx.JavaFxScheduler
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
 import std.observation.observeFields
-import ui.fx.fxHandle
+import ui.desktop.fxHandle
 import std.testing.Test
 import std.filesystem.Path
 import std.filesystem.writeTextAtomic

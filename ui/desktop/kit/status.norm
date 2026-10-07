@@ -1,0 +1,126 @@
+package ui.desktop.kit
+
+import ui.Widget
+import ui.NodeKey
+import ui.desktop.kit.internal.Alert as AlertControl
+import ui.desktop.kit.internal.Result as ResultControl
+import ui.desktop.kit.internal.Progress as ProgressControl
+import ui.desktop.kit.internal.Skeleton as SkeletonControl
+import ui.desktop.kit.internal.Spin as SpinControl
+import ui.desktop.kit.internal.Watermark as WatermarkControl
+import ui.desktop.kit.internal.BorderBeam as BeamControl
+import ui.desktop.kit.internal.AffixHost
+import ui.desktop.kit.internal.feedbackAdapterAlert
+import ui.desktop.kit.internal.feedbackAdapterResult
+import ui.desktop.kit.internal.feedbackAdapterSpin
+import ui.desktop.kit.internal.feedbackAdapterWatermark
+import ui.desktop.kit.internal.feedbackAdapterBorderBeam
+import ui.desktop.kit.internal.feedbackAdapterWatermarkText
+import ui.desktop.kit.internal.feedbackAdapterActions
+import ui.desktop.kit.internal.feedbackAdapterAffix
+import ui.desktop.kit.internal.progressNew
+import ui.desktop.kit.internal.skeletonNew
+import ui.desktop.kit.internal.hostItems
+
+value Alert implements Widget {
+  String title
+  Widget content
+  Boolean closable = false
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<AlertControl>(kind: "ui.desktop.kit.Alert", create: () { feedbackAdapterAlert(title)!! },
+      node: (control) { control }, update: (control, scope) { control.setTitle(title) control.setClosable(closable) },
+      children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      close: (control) {  }, key: key)
+  }
+}
+
+value Result implements Widget {
+  String title
+  String description
+  List<Widget> actions = []
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<ResultControl>(kind: "ui.desktop.kit.Result", create: () { feedbackAdapterResult(arg0: title, arg1: description)!! },
+      node: (control) { control }, update: (control, scope) { control.setTitle(title) control.setDescription(description) },
+      children: actions, arrange: (control, nodes) { feedbackAdapterActions(arg0: control, arg1: hostItems(nodes)) },
+      close: (control) {  }, key: key)
+  }
+}
+
+enum ProgressValue { Indeterminate, Fraction(Double fraction), Work(Integer completed, Integer total) }
+
+value Progress implements Widget {
+  ProgressValue value = ProgressValue.Indeterminate
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<ProgressControl>(kind: "ui.desktop.kit.Progress", create: () { progressNew() },
+      node: (control) { control }, update: (control, scope) {
+        switch value {
+          case Indeterminate { control.setProgress(-1.0) }
+          case Fraction(Double fraction) { control.setFraction(fraction) }
+          case Work(Integer completed, Integer total) { control.setWork(arg0: completed, arg1: total) }
+        }
+        return
+      },
+      close: (control) {  }, key: key)
+  }
+}
+
+value Skeleton implements Widget {
+  Integer lines = 3
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<SkeletonControl>(kind: "ui.desktop.kit.Skeleton", create: () { skeletonNew(lines) },
+      node: (control) { control }, update: (control, scope) { control.setLines(lines) },
+      close: (control) {  }, key: key)
+  }
+}
+
+value Spin implements Widget {
+  Widget content
+  Boolean spinning = false
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<SpinControl>(kind: "ui.desktop.kit.Spin", create: () { feedbackAdapterSpin()!! },
+      node: (control) { control }, update: (control, scope) { control.setSpinning(spinning) },
+      children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      close: (control) {  }, key: key)
+  }
+}
+
+value Watermark implements Widget {
+  String text
+  Widget content
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<WatermarkControl>(kind: "ui.desktop.kit.Watermark", create: () { feedbackAdapterWatermark(text)!! },
+      node: (control) { control }, update: (control, scope) { feedbackAdapterWatermarkText(arg0: control, arg1: text) },
+      children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      close: (control) {  }, key: key)
+  }
+}
+
+value BorderBeam implements Widget {
+  Widget content
+  Boolean animated = true
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<BeamControl>(kind: "ui.desktop.kit.BorderBeam", create: () { feedbackAdapterBorderBeam()!! },
+      node: (control) { control }, update: (control, scope) { control.setAnimated(animated) },
+      children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      close: (control) { control.close() }, key: key)
+  }
+}
+
+value Affix implements Widget {
+  Widget fixed
+  Widget content
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<AffixHost>(kind: "ui.desktop.kit.Affix", create: () { feedbackAdapterAffix()!! },
+      node: (control) { control }, update: (control, scope) {}, children: [fixed, content],
+      arrange: (control, nodes) { control.content(arg0: nodes[0], arg1: nodes[1]) },
+      close: (control) { control.close() }, key: key)
+  }
+}

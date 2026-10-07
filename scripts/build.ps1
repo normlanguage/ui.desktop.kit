@@ -2,7 +2,7 @@ param([string]$UiRoot, [string]$NormHome = (Join-Path (Split-Path $PSScriptRoot 
 $ErrorActionPreference = 'Stop'
 if ([string]::IsNullOrWhiteSpace($UiRoot)) { throw 'Build requires -UiRoot <ui source repository>' }
 $root = Split-Path $PSScriptRoot -Parent
-$licenseDirectory = Join-Path $root 'ui/fx/kit/resources/META-INF/licenses/ui.fx.kit'
+$licenseDirectory = Join-Path $root 'ui/desktop/kit/resources/META-INF/licenses/ui.desktop.kit'
 New-Item -ItemType Directory -Force $licenseDirectory | Out-Null
 Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination (Join-Path $licenseDirectory 'LICENSE') -Force
 & (Join-Path $root 'gradlew.bat') -p $root publish normDependencies "-PuiRoot=$UiRoot" --console=plain

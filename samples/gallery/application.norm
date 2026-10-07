@@ -5,7 +5,7 @@ import ui.Box
 import ui.SizeConstraints
 import ui.Dimension
 import ui.Widget
-import ui.fx.DesktopApp
+import ui.desktop.DesktopApp
 import ui.Text
 import ui.Column
 import ui.Row
@@ -20,12 +20,12 @@ import ui.theme.Tone
 import ui.theme.Appearance
 import ui.UiConfiguration
 import ui.UiProvider
-import ui.fx.kit.App
-import ui.fx.kit.Button
-import ui.fx.kit.Input
+import ui.desktop.kit.App
+import ui.desktop.kit.Button
+import ui.desktop.kit.Input
 import ui.Dock
 import gallery.Surface
-import ui.fx.kit.Typography
+import ui.desktop.kit.Typography
 import gallery.internal.gallerySupportResourceText
 
 Void main() {

@@ -1,6 +1,6 @@
 # Orders
 
-A JavaFX order workspace using `ui.fx.kit`. Orders use stable IDs, exact decimal totals, typed status, and independently sortable table columns. The detail form validates edits and tracks the last accepted save. Data lives in the current session.
+A JavaFX order workspace using `ui.desktop.kit`. Orders use stable IDs, exact decimal totals, typed status, and independently sortable table columns. The detail form validates edits and tracks the last accepted save. Data lives in the current session.
 
 From the repository root after preparing the local packages:
 

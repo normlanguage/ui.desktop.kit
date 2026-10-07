@@ -5,15 +5,15 @@ import ui.Widget
 import ui.Text
 import ui.Column as Vertical
 import ui.Binding
-import ui.fx.kit.Button as ActionButton
-import ui.fx.kit.Modal
-import ui.fx.kit.Drawer
-import ui.fx.kit.DrawerSide
-import ui.fx.kit.Popover
-import ui.fx.kit.Tooltip
-import ui.fx.kit.Popconfirm
-import ui.fx.kit.Tour
-import ui.fx.kit.TourStep
+import ui.desktop.kit.Button as ActionButton
+import ui.desktop.kit.Modal
+import ui.desktop.kit.Drawer
+import ui.desktop.kit.DrawerSide
+import ui.desktop.kit.Popover
+import ui.desktop.kit.Tooltip
+import ui.desktop.kit.Popconfirm
+import ui.desktop.kit.Tour
+import ui.desktop.kit.TourStep
 
 class ModalExample implements Widget {
   Boolean open = false

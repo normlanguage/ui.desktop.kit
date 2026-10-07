@@ -1,13 +1,13 @@
 import ui.Renderer
 import ui.Widget
 import ui.NodeKey
-import ui.fx.JavaFxBackend
-import ui.fx.JavaFxScheduler
-import ui.fx.fxHandle
-import ui.fx.FxApplication
-import ui.fx.nativeComponent
-import ui.fx.native.Button
-import ui.fx.native.buttonNew
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
+import ui.desktop.fxHandle
+import ui.desktop.FxApplication
+import ui.desktop.nativeComponent
+import ui.desktop.native.Button
+import ui.desktop.native.buttonNew
 import ui.ThemeProvider
 import ui.theme.ThemeManager
 import ui.theme.ThemeDefinition
@@ -15,7 +15,7 @@ import ui.theme.Color
 import std.core.Exception
 
 Module module() {
-  module(dependencies: [dependency(repository: "github", name: "ui", version: 9), dependency(repository: "github", name: "ui.fx", version: 7), dependency(repository: "github", name: "ui.theme", version: 3)])
+  module(dependencies: [dependency(repository: "github", name: "ui", version: 9), dependency(repository: "github", name: "ui.desktop", version: 7), dependency(repository: "github", name: "ui.theme", version: 3)])
 }
 
 class Verification { Boolean completed = false String? failure = null }

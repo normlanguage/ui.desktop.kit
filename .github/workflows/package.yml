@@ -42,7 +42,7 @@ jobs:
       - uses: normlanguage/registry/.github/actions/package-module@1c5b2948a0c788f1aa21542255eb1a445027ab29
         id: package
         with:
-          module-path: ui/fx/kit
+          module-path: ui/desktop/kit
           cache-directory: ~/.norm/cache/packages/github
       - name: Verify JavaFX components and theme rendering
         shell: pwsh
@@ -52,10 +52,10 @@ jobs:
       - name: Verify component lifecycle and gallery
         shell: bash
         run: |
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.tabs
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.creation
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.inputs
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.display
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.tabs
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.creation
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.inputs
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.display
           timeout 300 norm test samples/tasks
           timeout 300 norm test samples/orders
           timeout 300 norm test samples/jobs

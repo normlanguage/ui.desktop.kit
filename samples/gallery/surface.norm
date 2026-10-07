@@ -2,9 +2,9 @@ package gallery
 
 import ui.Widget
 import ui.NodeKey
-import ui.fx.nativeComponent
-import ui.fx.native.StackPane
-import ui.fx.native.stackPaneNew
+import ui.desktop.nativeComponent
+import ui.desktop.native.StackPane
+import ui.desktop.native.stackPaneNew
 
 value Surface implements Widget {
   Widget content

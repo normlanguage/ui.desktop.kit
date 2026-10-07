@@ -1,0 +1,53 @@
+package ui.desktop.kit.test.feedback
+
+import std.testing.Test
+import ui.Widget
+import ui.Text
+import ui.Column
+import ui.Binding
+import ui.Renderer
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
+import ui.desktop.fxHandle
+import ui.desktop.FxApplication
+import ui.desktop.withFxRuntime
+import ui.desktop.kit.Modal
+import ui.desktop.kit.Drawer
+import ui.desktop.kit.Popover
+import ui.desktop.kit.Tooltip
+import ui.desktop.kit.Popconfirm
+import ui.desktop.kit.Tour
+import ui.desktop.kit.TourStep
+
+class State { Boolean open = false Boolean completed = false Boolean closed = false }
+
+Widget preview(State state) {
+  Binding<Boolean> open = Binding<Boolean>(read: () { state.open }, write: (Boolean next) { state.open = next })
+  Column(gap: 12.0, children: [
+    Modal(title: "确认", anchor: Text("打开对话框"), content: Text("详细信息"), open: open),
+    Drawer(anchor: Text("打开抽屉"), content: Text("侧边内容"), open: open),
+    Popover(anchor: Text("打开气泡卡片"), content: Text("卡片内容"), open: open),
+    Tooltip(anchor: Text("查看提示"), text: "提示内容"),
+    Popconfirm(anchor: Text("删除"), question: "确认删除？", open: open, confirmed: () {}),
+    Tour(steps: [TourStep(target: Text("第一步"), title: "开始", description: "查看界面")], open: open)
+  ])
+}
+
+@Test
+Void mountsAndReleasesAllOverlayWidgets() {
+  withFxRuntime(() {
+    var application = FxApplication("Overlay verification")
+    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+    var state = State()
+    application.run(build: () {
+      try {
+        renderer.render(preview(state))
+        application.root(fxHandle(renderer.node()))
+        renderer.render(preview(state))
+        state.completed = true
+      } finally { application.close() }
+    }, dispose: () { renderer.close() state.closed = true })
+    require(condition: state.completed && state.closed,
+      message: "overlay window callback and renderer cleanup both completed")
+  })
+}

@@ -1,0 +1,569 @@
+package ui.desktop.kit
+
+import ui.Widget
+import ui.NodeKey
+import ui.theme.Tone
+import ui.theme.Appearance
+import ui.desktop.kit.internal.styleSurface
+import ui.State
+import ui.ItemKey
+import std.context.currentContext
+import ui.ViewScope
+import ui.ForEach
+import ui.Binding
+import ui.View
+import ui.describe
+import ui.desktop.kit.internal.TableCellSlot
+import ui.desktop.kit.internal.tableColumnSpecNew
+import java.base.util.JavaList
+import java.base.time.LocalDate
+import java.base.time.YearMonth
+import ui.desktop.kit.internal.Avatar as AvatarControl
+import ui.desktop.kit.internal.Badge as BadgeControl
+import ui.desktop.kit.internal.Calendar as CalendarControl
+import ui.desktop.kit.internal.Card as CardControl
+import ui.desktop.kit.internal.Carousel as CarouselControl
+import ui.desktop.kit.internal.Collapse as CollapseControl
+import ui.desktop.kit.internal.Descriptions as DescriptionsControl
+import ui.desktop.kit.internal.Empty as EmptyControl
+import ui.desktop.kit.internal.Image as ImageControl
+import ui.desktop.kit.internal.ListView as ListControl
+import ui.desktop.kit.internal.Listy as ListyControl
+import ui.desktop.kit.internal.QRCode as QRCodeControl
+import ui.desktop.kit.internal.Segmented as SegmentedControl
+import ui.desktop.kit.internal.Statistic as StatisticControl
+import ui.desktop.kit.internal.Table as TableControl
+import ui.desktop.kit.internal.Tag as TagControl
+import ui.desktop.kit.internal.Timeline as TimelineControl
+import ui.desktop.kit.internal.Tree as TreeControl
+import ui.desktop.kit.internal.ValueLink
+import ui.desktop.kit.internal.SelectionLink
+import ui.desktop.kit.internal.TreeSelectionLink
+import ui.desktop.kit.internal.TableSortState as NativeTableSort
+import ui.desktop.kit.internal.TableSortLink
+import ui.desktop.kit.internal.TreeCheckLink
+import ui.desktop.kit.internal.tableSortStateNew
+import ui.desktop.kit.internal.tableSortLinkNew
+import ui.desktop.kit.internal.treeCheckLinkNew
+import ui.desktop.kit.internal.avatarNew
+import ui.desktop.kit.internal.calendarNew
+import ui.desktop.kit.internal.carouselNew
+import ui.desktop.kit.internal.descriptionsNew
+import ui.desktop.kit.internal.emptyNew
+import ui.desktop.kit.internal.imageNew
+import ui.desktop.kit.internal.listViewNew
+import ui.desktop.kit.internal.listyNew
+import ui.desktop.kit.internal.qrCodeNew
+import ui.desktop.kit.internal.segmented
+import ui.desktop.kit.internal.tableNew
+import ui.desktop.kit.internal.tagNew
+import ui.desktop.kit.internal.timelineNew
+import ui.desktop.kit.internal.treeNew
+import ui.desktop.kit.internal.displayAdapterAvatarSource
+import ui.desktop.kit.internal.displayAdapterBadge
+import ui.desktop.kit.internal.displayAdapterBadgeContent
+import ui.desktop.kit.internal.displayAdapterCalendarValue
+import ui.desktop.kit.internal.displayAdapterCalendarMonth
+import ui.desktop.kit.internal.displayAdapterCard
+import ui.desktop.kit.internal.displayAdapterCardSlots
+import ui.desktop.kit.internal.displayAdapterCarouselSlides
+import ui.desktop.kit.internal.displayAdapterCollapse
+import ui.desktop.kit.internal.displayAdapterCollapseContent
+import ui.desktop.kit.internal.displayAdapterCollapseExpanded
+import ui.desktop.kit.internal.displayAdapterDescriptions
+import ui.desktop.kit.internal.displayAdapterItems
+import ui.desktop.kit.internal.displayAdapterRows
+import ui.desktop.kit.internal.displayAdapterSegmentedItems
+import ui.desktop.kit.internal.displayAdapterSegmentedValue
+import ui.desktop.kit.internal.displayAdapterSelected
+import ui.desktop.kit.internal.displayAdapterStatistic
+import ui.desktop.kit.internal.displayAdapterStatisticValue
+import ui.desktop.kit.internal.displayAdapterTableSelected
+import ui.desktop.kit.internal.displayAdapterTagOnClose
+import ui.desktop.kit.internal.displayAdapterTimeline
+import ui.desktop.kit.internal.displayAdapterTreeChildren
+import ui.desktop.kit.internal.displayAdapterTreeSelected
+import ui.desktop.kit.internal.hostItems
+import ui.desktop.kit.internal.hostNullableItems
+import ui.desktop.kit.internal.selectionItems
+import ui.desktop.kit.internal.utilCloseNode
+
+value Avatar implements Widget {
+  String text
+  String? source = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<AvatarControl>(kind: "ui.desktop.kit.Avatar",
+      create: () { avatarNew(text) }, node: (control) { control },
+      update: (control, scope) {
+        control.setText(text)
+        displayAdapterAvatarSource(arg0: control, arg1: source)
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Badge implements Widget {
+  Widget content
+  Integer count = 0
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<BadgeControl>(kind: "ui.desktop.kit.Badge",
+      create: () { displayAdapterBadge()!! }, node: (control) { control },
+      update: (control, scope) { control.setCount(count) }, children: [content],
+      arrange: (control, nodes) { displayAdapterBadgeContent(arg0: control, arg1: nodes[0]) },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+private class CalendarHost {
+  CalendarControl control
+  ValueLink<LocalDate> selected
+  ValueLink<YearMonth> month
+}
+
+value Calendar implements Widget {
+  Binding<LocalDate?> selected
+  Binding<YearMonth>? displayedMonth = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<CalendarHost>(kind: "ui.desktop.kit.Calendar",
+      create: () {
+        var control = calendarNew()
+        CalendarHost(control: control, selected: displayAdapterCalendarValue(control)!!, month: displayAdapterCalendarMonth(control)!!)
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        var selectedChanged = scope.bind((LocalDate? next) { selected.value = next })
+        host.selected.update(arg0: selected.value, arg1: selectedChanged)
+        var currentMonth = displayedMonth
+        if currentMonth != null {
+          var monthChanged = scope.bind((YearMonth? next) { currentMonth.value = next!! })
+          host.month.update(arg0: currentMonth.value, arg1: monthChanged)
+        } else { host.month.unbind() }
+      }, close: (host) {
+        host.selected.close()
+        host.month.close()
+        host.control.close()
+      }, key: key)
+  }
+}
+
+value Card implements Widget {
+  Widget content
+  String title = ""
+  Widget? header = null
+  Tone tone = Tone.Neutral
+  Appearance appearance = Appearance.Plain
+  Widget? bottom = null
+  NodeKey? key = null
+
+  Widget build() {
+    List<Widget> children = [content]
+    var footer = bottom
+    var heading = header
+    if footer != null { children.add(footer) }
+    if heading != null { children.add(heading) }
+    nativeComponent<CardControl>(kind: "ui.desktop.kit.Card",
+      create: () { displayAdapterCard(title)!! }, node: (control) { control },
+      update: (control, scope) {
+        control.setTitle(title)
+        styleSurface(control: control, tone: tone, appearance: appearance)
+      }, children: children,
+      arrange: (control, nodes) {
+        displayAdapterCardSlots(arg0: control, arg1: nodes[0], arg2: if footer != null { nodes[1] } else { null })
+        control.setHeader(if heading != null { nodes[if footer != null { 2 } else { 1 }] } else { null })
+      },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Carousel implements Widget {
+  List<Widget> slides
+  Integer index = 0
+  Boolean autoPlay = false
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<CarouselControl>(kind: "ui.desktop.kit.Carousel",
+      create: () { carouselNew() }, node: (control) { control },
+      update: (control, scope) {
+        control.setAutoPlay(autoPlay)
+      }, children: slides,
+      arrange: (control, nodes) {
+        displayAdapterCarouselSlides(arg0: control, arg1: hostItems(nodes))
+        if nodes.size() > index { control.setIndex(index) }
+      },
+      close: (control) { control.close() }, key: key)
+  }
+}
+
+private class CollapseHost {
+  CollapseControl control
+  ValueLink<Boolean> expanded
+}
+
+value Collapse implements Widget {
+  String title
+  Widget content
+  Binding<Boolean> expanded
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<CollapseHost>(kind: "ui.desktop.kit.Collapse",
+      create: () {
+        var control = displayAdapterCollapse(title)
+        CollapseHost(control: control!!, expanded: displayAdapterCollapseExpanded(control!!)!!)
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        host.control.setText(title)
+        var changed = scope.bind((Boolean? next) { expanded.value = next!! })
+        host.expanded.update(arg0: expanded.value, arg1: changed)
+      }, children: [content],
+      arrange: (host, nodes) { displayAdapterCollapseContent(arg0: host.control, arg1: nodes[0]) },
+      close: (host) { host.expanded.close() host.control.close() }, key: key)
+  }
+}
+
+value Description {
+  String label
+  Widget content
+}
+
+value Descriptions implements Widget {
+  List<Description> items
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<DescriptionsControl>(kind: "ui.desktop.kit.Descriptions",
+      create: () { descriptionsNew() }, node: (control) { control },
+      update: (control, scope) {}, children: [for (item : items) item.content],
+      arrange: (control, nodes) { displayAdapterDescriptions(arg0: control, arg1: hostItems([for (item : items) item.label]), arg2: hostItems(nodes)) },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Empty implements Widget {
+  String description
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<EmptyControl>(kind: "ui.desktop.kit.Empty",
+      create: () { emptyNew(description) }, node: (control) { control },
+      update: (control, scope) { control.setDescription(description) },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Image implements Widget {
+  String source
+  Boolean previewable = false
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<ImageControl>(kind: "ui.desktop.kit.Image",
+      create: () { imageNew(source) }, node: (control) { control },
+      update: (control, scope) {
+        control.setSource(source)
+        control.setPreviewable(previewable)
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+private class ListHost<T> {
+  ListControl<T?> control
+  SelectionLink<T?> selected
+}
+
+value ListView<T> implements Widget {
+  List<T> items
+  Binding<T?>? selected = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<ListHost<T>>(kind: "ui.desktop.kit.ListView",
+      create: () {
+        var control = listViewNew<T?>()
+        ListHost<T>(control: control, selected: displayAdapterSelected(control)!!)
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        displayAdapterItems(arg0: host.control, arg1: hostNullableItems(items))
+        var selection = selected
+        if selection != null {
+          var changed = scope.bind((T? next) { selection.value = next })
+          host.selected.update(arg0: selection.value, arg1: changed)
+        } else { host.selected.unbind() }
+      }, close: (host) { host.selected.close() utilCloseNode(host.control) }, key: key)
+  }
+}
+
+private class ListyHost<T> {
+  ListyControl<T?> control
+  SelectionLink<T?> selected
+  State<List<T>> visible
+}
+
+value Listy<T> implements Widget {
+  List<T> items
+  Function<ItemKey(T)> identity
+  Function<Widget(T)> row
+  Double rowHeight = 32.0
+  Binding<T?>? selected = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<ListyHost<T>>(kind: "ui.desktop.kit.Listy",
+      create: () {
+        var control = listyNew<T?>()
+        ListyHost<T>(control: control, selected: displayAdapterSelected(control)!!,
+          visible: currentContext<ViewScope>()!!.createState<List<T>>([]))
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        var visible = host.visible
+        host.control.rows(scope.bind<JavaList<T?>?>((JavaList<T?>? next) { visible.value = selectionItems(next) }))
+        host.control.setRowHeight(rowHeight)
+        displayAdapterItems(arg0: host.control, arg1: hostNullableItems(items))
+        var selection = selected
+        if selection != null {
+          var changed = scope.bind((T? next) { selection.value = next })
+          host.selected.update(arg0: selection.value, arg1: changed)
+        } else { host.selected.unbind() }
+      }, childrenBuilder: (host) { ForEach<T>(items: host.visible.value, identity: identity, child: row).widgets() },
+      arrange: (host, nodes) { host.control.rowNodes(hostItems(nodes)) },
+      close: (host) { host.selected.close() host.control.close() utilCloseNode(host.control) }, key: key)
+  }
+}
+
+value QRCode implements Widget {
+  String text
+  Integer size = 144
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<QRCodeControl>(kind: "ui.desktop.kit.QRCode",
+      create: () { qrCodeNew(arg0: text, arg1: size) }, node: (control) { control },
+      update: (control, scope) { control.setText(text) control.setSize(size) },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+private class SegmentedHost<T> {
+  SegmentedControl<T?> control
+  ValueLink<T?> selected
+}
+
+value Segmented<T> implements Widget {
+  List<T> items
+  Binding<T?> selected
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<SegmentedHost<T>>(kind: "ui.desktop.kit.Segmented",
+      create: () {
+        var control = segmented<T>(items)
+        SegmentedHost<T>(control: control, selected: displayAdapterSegmentedValue(control)!!)
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        displayAdapterSegmentedItems(arg0: host.control, arg1: hostNullableItems(items))
+        var changed = scope.bind((T? next) { selected.value = next })
+        host.selected.update(arg0: selected.value, arg1: changed)
+      }, close: (host) { host.selected.close() utilCloseNode(host.control) }, key: key)
+  }
+}
+
+value Statistic implements Widget {
+  String title
+  Integer value
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<StatisticControl>(kind: "ui.desktop.kit.Statistic",
+      create: () { displayAdapterStatistic(arg0: title, arg1: value)!! }, node: (control) { control },
+      update: (control, scope) { displayAdapterStatisticValue(arg0: control, arg1: value) },
+      close: (control) { control.close() }, key: key)
+  }
+}
+
+value TableColumn<T> {
+  String id
+  String heading
+  Function<String(T)> display = (T row) { "" }
+  Function<Integer(T, T)>? compare = null
+  Function<Widget(T)>? cell = null
+}
+
+value TableSort {
+  String columnId
+  Boolean descending = false
+}
+
+private value TableCellIdentity implements ItemKey { String columnId ItemKey row }
+
+private class TableHost<T> {
+  TableControl<T?> control
+  SelectionLink<T?> selected
+  TableSortLink<T?> sorting
+  State<List<TableCellSlot<T?>>> slots
+}
+
+value Table<T> implements Widget {
+  List<T> rows
+  Function<ItemKey(T)> identity
+  List<TableColumn<T>> columns
+  Binding<T?>? selected = null
+  Binding<TableSort?>? sort = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<TableHost<T>>(kind: "ui.desktop.kit.Table",
+      create: () {
+        var control = tableNew<T?>()
+        TableHost<T>(control: control, selected: displayAdapterTableSelected(control)!!,
+          sorting: tableSortLinkNew<T?>(control),
+          slots: currentContext<ViewScope>()!!.createState<List<TableCellSlot<T?>>>([]))
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        var selection = selected
+        T? requestedSelection = null
+        if selection != null {
+          var currentSelection = selection.value
+          if currentSelection != null {
+            var rowIdentity = identity(currentSelection)
+            for row : rows {
+              if identity(row) == rowIdentity { requestedSelection = row break }
+            }
+          }
+        }
+        host.selected.unbind()
+        displayAdapterRows(arg0: host.control, arg1: hostNullableItems(rows))
+        var visible = host.slots
+        host.control.cellSlots(scope.bind<JavaList<TableCellSlot<T?>>?>((JavaList<TableCellSlot<T?>>? next) {
+          List<TableCellSlot<T?>> items = []
+          if next != null {
+            var iterator = next.iterator()!!
+            for iterator.hasNext() { items.add(iterator.next()!!) }
+          }
+          visible.value = items
+        }))
+        host.sorting.columns(hostItems([for (column : columns)
+          tableColumnSpecNew<T?>(arg0: column.id, arg1: column.heading,
+            arg2: (T? row) { column.display(row!!) },
+            arg3: if column.compare == null { null } else { (T? left, T? right) { column.compare!!(left!!, right!!) } },
+            arg4: column.cell != null)]))
+        if selection != null {
+          if selection.value != requestedSelection { selection.value = requestedSelection }
+          var changed = scope.bind((T? next) { selection.value = next })
+          host.selected.update(arg0: requestedSelection, arg1: changed)
+        } else { host.selected.unbind() }
+        var order = sort
+        if order != null {
+          var requested = order.value
+          host.sorting.update(arg0: if requested == null { null } else {
+              tableSortStateNew(arg0: requested.columnId, arg1: requested.descending)
+            }, arg1: scope.bind((NativeTableSort? next) {
+              order.value = if next == null { null } else {
+                TableSort(columnId: next.columnId()!!, descending: next.descending())
+              }
+            }))
+        } else { host.sorting.unbind() }
+      }, childrenBuilder: (host) {
+        List<Widget> widgets = []
+        var visible = host.slots
+          for slot : visible.value {
+            for column : columns {
+              if column.id == slot.columnId()!! {
+                var factory = column.cell
+                if factory != null {
+                  var view = describe(factory(slot.row()!!))
+                  widgets.add(View(key: NodeKey.Item(TableCellIdentity(columnId: slot.columnId()!!, row: identity(slot.row()!!))),
+                    content: view.content, role: view.role, enabled: view.enabled, reference: view.reference))
+                }
+              }
+            }
+          }
+        widgets
+      }, arrange: (host, nodes) { host.control.cellNodes(hostItems(nodes)) },
+      close: (host) { host.selected.close() host.sorting.close() host.control.close() }, key: key)
+  }
+}
+
+value Tag implements Widget {
+  String text
+  Tone tone = Tone.Neutral
+  Appearance appearance = Appearance.Soft
+  Boolean closable = false
+  Function<Void()>? onClose = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<TagControl>(kind: "ui.desktop.kit.Tag",
+      create: () { tagNew(text) }, node: (control) { control },
+      update: (control, scope) {
+        control.setText(text)
+        control.setClosable(closable)
+        styleSurface(control: control, tone: tone, appearance: appearance)
+        var action = onClose
+        displayAdapterTagOnClose(arg0: control, arg1: if action != null { scope.bind(action) } else { null })
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value TimelineEntry {
+  String time
+  Widget content
+}
+
+value Timeline implements Widget {
+  List<TimelineEntry> entries
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<TimelineControl>(kind: "ui.desktop.kit.Timeline",
+      create: () { timelineNew() }, node: (control) { control },
+      update: (control, scope) {}, children: [for (entry : entries) entry.content],
+      arrange: (control, nodes) {
+        displayAdapterTimeline(arg0: control, arg1: hostItems([for (entry : entries) entry.time]), arg2: hostItems(nodes))
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+private class TreeHost<T> {
+  TreeControl<T?> control
+  TreeSelectionLink<T?> selected
+  TreeCheckLink<T?> checked
+}
+
+value Tree<T> implements Widget {
+  T root
+  Function<List<T>(T)> children
+  Binding<T?>? selected = null
+  Boolean checkable = false
+  Binding<List<T>>? checked = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<TreeHost<T>>(kind: "ui.desktop.kit.Tree",
+      create: () {
+        var control = treeNew<T?>(root)
+        TreeHost<T>(control: control, selected: displayAdapterTreeSelected(control)!!,
+          checked: treeCheckLinkNew<T?>(control))
+      }, node: (host) { host.control },
+      update: (host, scope) {
+        displayAdapterTreeChildren(arg0: host.control, arg1: (T? value) { hostNullableItems(children(value!!)) })
+        host.control.setCheckable(checkable)
+        var selection = selected
+        if selection != null {
+          var changed = scope.bind((T? next) { selection.value = next })
+          host.selected.update(arg0: selection.value, arg1: changed)
+        } else { host.selected.unbind() }
+        var checks = checked
+        if checks != null {
+          var changed = scope.bind<JavaList<T?>?>((JavaList<T?>? next) {
+            checks.value = selectionItems(next)
+          })
+          host.checked.update(arg0: hostNullableItems(checks.value), arg1: changed)
+        } else { host.checked.unbind() }
+      }, close: (host) { host.selected.close() host.checked.close() utilCloseNode(host.control) }, key: key)
+  }
+}
