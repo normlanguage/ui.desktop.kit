@@ -3,12 +3,11 @@ package dev.normlanguage.ui.component;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.control.ListCell;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
 
 public class Listy<T> extends List<T> implements AutoCloseable {
-    private final java.util.List<RowCell> cells = new ArrayList<>();
+    private final java.util.Set<RowCell> cells = java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>());
     private java.util.List<RowCell> mounted = java.util.List.of();
     private java.util.List<T> published = java.util.List.of();
     private java.util.List<Node> rendered = java.util.List.of();

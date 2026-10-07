@@ -48,12 +48,21 @@ value Result implements Widget {
   }
 }
 
+enum ProgressValue { Indeterminate, Fraction(Double fraction), Work(Integer completed, Integer total) }
+
 value Progress implements Widget {
-  Double value = -1.0
+  ProgressValue value = ProgressValue.Indeterminate
   NodeKey? key = null
   Widget build() {
     nativeComponent<ProgressControl>(kind: "ui.fx.kit.Progress", create: () { progressNew() },
-      node: (control) { control }, update: (control, scope) { control.setProgress(value) },
+      node: (control) { control }, update: (control, scope) {
+        switch value {
+          case Indeterminate { control.setProgress(-1.0) }
+          case Fraction(Double fraction) { control.setFraction(fraction) }
+          case Work(Integer completed, Integer total) { control.setWork(arg0: completed, arg1: total) }
+        }
+        return
+      },
       close: (control) {  }, key: key)
   }
 }
