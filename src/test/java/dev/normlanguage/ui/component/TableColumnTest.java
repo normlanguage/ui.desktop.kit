@@ -33,6 +33,8 @@ class TableColumnTest extends FxTest {
     }
     @Test void virtualWidgetCellsPublishSlotsAndReleaseGraphicsOnClose() throws Exception {
         var ready = new java.util.concurrent.CountDownLatch(1);
+        var emptied = new java.util.concurrent.CountDownLatch(1);
+        var removing = new java.util.concurrent.atomic.AtomicBoolean();
         var reference = new java.util.concurrent.atomic.AtomicReference<Table<Order>>();
         var window = new java.util.concurrent.atomic.AtomicReference<javafx.stage.Stage>();
         var graphics = new java.util.ArrayList<javafx.scene.Node>();
@@ -42,7 +44,10 @@ class TableColumnTest extends FxTest {
             DisplayAdapter.rows(table, List.of(new Order(2, "Two"), new Order(10, "Ten")));
             DisplayAdapter.tableColumns(table, List.of(new TableColumnSpec<>("amount", "Amount", Order::label, null, true)));
             table.cellSlots(slots -> {
-                if (slots.isEmpty()) return;
+                if (slots.isEmpty()) {
+                    if (removing.get()) emptied.countDown();
+                    return;
+                }
                 graphics.clear();
                 for (var slot : slots) graphics.add(new javafx.scene.control.Label(slot.row().label()));
                 table.cellNodes(graphics);
@@ -61,6 +66,15 @@ class TableColumnTest extends FxTest {
             DisplayAdapter.tableColumns(reference.get(), List.of(new TableColumnSpec<>("amount", "Translated", Order::label, null, true)));
             reference.get().applyCss();
             reference.get().layout();
+            removing.set(true);
+            DisplayAdapter.rows(reference.get(), List.of());
+            reference.get().cellSlots(slots -> {
+                assertTrue(slots.isEmpty());
+                emptied.countDown();
+            });
+        });
+        assertTrue(emptied.await(10, java.util.concurrent.TimeUnit.SECONDS));
+        fx(() -> {
             reference.get().close();
             assertTrue(graphics.stream().allMatch(node -> node.getParent() == null));
             window.get().close();
