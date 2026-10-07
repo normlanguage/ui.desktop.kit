@@ -19,9 +19,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           lfs: true
-      - uses: normlanguage/registry/.github/actions/setup-norm@d229852448570c786a3f86e62c7db36769ed9a18
+      - uses: normlanguage/registry/.github/actions/setup-norm@549b0746e992a9c6c698b3c701fa2dd88cccdd4b
         with:
-          source-ref: f964fa87e1ca5851d4ff2d796e01c093c13ad247
+          source-ref: 02691fed8b6906cc69ef6d21b6e9edd61930981d
       - uses: actions/setup-java@v4
         with:
           distribution: oracle
