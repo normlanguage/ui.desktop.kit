@@ -1,0 +1,71 @@
+package orders.test.runtime
+
+import orders.Order
+import orders.OrderWorkspace
+import ui.Renderer
+import ui.fx.FxApplication
+import ui.fx.JavaFxBackend
+import ui.fx.JavaFxScheduler
+import ui.fx.fxHandle
+import ui.fx.withFxRuntime
+import ui.fx.native.TextField
+import ui.fx.native.Button
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
+import java.base.math.bigDecimalNew
+import std.testing.Test
+
+class OrderRunResult { Boolean completed = false }
+
+@Test
+Void rendersSearchTableAndOrderFormInARealWindow() {
+  withFxRuntime(() {
+    var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#1677FF"), neutral: Color(hex: "#808080")))
+    var workspace = OrderWorkspace(theme: theme)
+    var application = FxApplication("Order workspace acceptance", width: 1260.0, height: 800.0)
+    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+    var result = OrderRunResult()
+    try {
+      application.run(build: () {
+        renderer.render(workspace)
+        application.root(fxHandle(renderer.node()))
+        application.later(() {
+          application.later(() {
+            workspace.query = "SO-103"
+            require(condition: workspace.book.filter(query: workspace.query, pendingOnly: false).size() == 3,
+              message: "the displayed order query filters the real workspace")
+            workspace.editor.customer = "Edited customer"
+            workspace.select(workspace.book.orders[1])
+            require(condition: workspace.selected!!.id == "SO-1042", message: "dirty details prevent losing edits through table selection")
+            workspace.editor.controller.reset()
+            workspace.select(workspace.book.orders[1])
+            require(condition: workspace.selected!!.id == "SO-1041", message: "reset permits switching the detail editor")
+            workspace.query = ""
+            renderer.render(workspace)
+            application.later(() {
+              try {
+                switch application.scene().lookup("#order-customer") {
+                  case TextField input { input.setText("Saved customer") }
+                  case _ { require(condition: false, message: "the order customer input is mounted") }
+                }
+                workspace.editor.total = bigDecimalNew("10.25")!!
+                switch application.scene().lookup(".norm-card .norm-button") {
+                  case Button button { button.fire() }
+                  case _ { require(condition: false, message: "the order save button is mounted") }
+                }
+                require(condition: workspace.book.orders[1].customer == "Saved customer" &&
+                    workspace.book.orders[1].total.toPlainString() == "10.25" &&
+                    workspace.book.orders[0].customer != "Saved customer" && !workspace.editor.controller.dirty(),
+                  message: "native input and form submission save only the switched order")
+                renderer.render(workspace)
+                result.completed = true
+              } finally { application.close() }
+            })
+          })
+        })
+      }, dispose: renderer.close)
+      require(condition: result.completed, message: "the order window completed its full edit workflow")
+    } finally { theme.close() }
+  })
+}

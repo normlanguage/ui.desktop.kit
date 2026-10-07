@@ -1,0 +1,8 @@
+Module module() {
+  module(name: "orders", version: 1, exports: ["application", "model"],
+    dependencies: [dependency(repository: "github", name: "ui.fx", version: 7),
+      dependency(repository: "github", name: "ui.fx.kit", version: 7),
+      dependency(repository: "github", name: "ui", version: 9),
+      dependency(repository: "github", name: "ui.theme", version: 3),
+      dependency(repository: "norm", name: "java.base", version: 1)])
+}

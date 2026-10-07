@@ -1,0 +1,185 @@
+package orders
+
+import ui.Widget
+import ui.Binding
+import ui.NodeKey
+import ui.Keyed
+import ui.ValueKey
+import ui.Text
+import ui.Column
+import ui.Row
+import ui.Box
+import ui.Dock
+import ui.Insets
+import ui.SizeConstraints
+import ui.Dimension
+import ui.CrossAlignment
+import ui.WidgetRole
+import ui.UiProvider
+import ui.UiConfiguration
+import ui.fx.DesktopApp
+import ui.fx.kit.App
+import ui.fx.kit.Button
+import ui.fx.kit.Input
+import ui.fx.kit.InputNumber
+import ui.fx.kit.Checkbox
+import ui.fx.kit.Card
+import ui.fx.kit.Tag
+import ui.fx.kit.Table
+import ui.fx.kit.TableColumn
+import ui.fx.kit.TableSort
+import ui.fx.kit.Form
+import ui.fx.kit.FormField
+import ui.fx.kit.FormController
+import ui.fx.kit.FormSubmission
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.theme.Tone
+import ui.theme.Appearance
+import java.base.math.BigDecimal
+import java.base.math.bigDecimalNew
+
+Void main() {
+  var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#1677FF"), neutral: Color(hex: "#808080")))
+  var workspace = OrderWorkspace(theme: theme)
+  try {
+    DesktopApp(title: "Norm · 订单管理", home: workspace, width: 1260.0, height: 800.0,
+      onCloseRequested: (request) {
+        if workspace.editor.controller.dirty() {
+          request.cancel()
+          workspace.notice = "有未保存的修改，请先保存或重置后退出。"
+        } else { request.accept() }
+      }).run()
+  } finally { theme.close() }
+}
+
+class OrderWorkspace implements Widget {
+  ThemeManager theme
+  OrderBook book
+  Order? selected
+  String query = ""
+  Boolean pendingOnly = false
+  Boolean dark = false
+  String notice = "订单保存在本次会话中。"
+  TableSort? sort = TableSort(columnId: "total")
+  private OrderEditor? currentEditor = null
+
+  OrderEditor editor {
+    get {
+      if currentEditor == null { currentEditor = OrderEditor(order: selected!!, save: this.save) }
+      currentEditor!!
+    }
+  }
+
+  OrderWorkspace(ThemeManager theme) {
+    this.theme = theme
+    var initial = OrderBook()
+    book = initial
+    selected = initial.orders[0]
+  }
+
+  Void select(Order? order) {
+    if order == null { return }
+    var current = selected
+    if current != null && order.id == current.id { selected = order return }
+    if editor.controller.dirty() {
+      notice = "请先保存或重置当前订单，再切换订单。"
+      return
+    }
+    selected = order
+    currentEditor = OrderEditor(order: order, save: this.save)
+    notice = "正在编辑 ${order.id}"
+  }
+
+  Void save(Order order) {
+    book.save(order)
+    selected = order
+    notice = "${order.id} 已保存"
+  }
+
+  Widget build() {
+    var search = Binding<String>(read: () { query }, write: (String value) { query = value })
+    var pending = Binding<Boolean>(read: () { pendingOnly }, write: (Boolean value) { pendingOnly = value })
+    var selection = Binding<Order?>(read: () { selected }, write: this.select)
+    var ordering = Binding<TableSort?>(read: () { sort }, write: (TableSort? value) { sort = value })
+    var rows = book.filter(query: query, pendingOnly: pendingOnly)
+    UiProvider(configuration: UiConfiguration(fontFamily: "Microsoft YaHei UI"), child:
+      App(theme: theme, content: Box(padding: Insets(top: 28.0, right: 28.0, bottom: 24.0, left: 28.0), content:
+        Dock(top: Column(gap: 18.0, cross: CrossAlignment.Stretch) {
+          Row(gap: 18.0, cross: CrossAlignment.Center) {
+            Text(text: "订单管理", role: WidgetRole.Title)
+            Tag(text: "${book.orders.size()} 笔订单", appearance: Appearance.Soft)
+            Button(text: if dark { "浅色模式" } else { "深色模式" }, appearance: Appearance.Plain, action: () {
+              dark = !dark
+              theme.setMode(if dark { ThemeMode.Dark } else { ThemeMode.Light })
+            })
+          }
+          Row(gap: 18.0, cross: CrossAlignment.Center) {
+            Box(size: SizeConstraints(width: Dimension.Fixed(360.0)), content: Input(value: search, placeholder: "搜索订单号或客户"))
+            Checkbox(text: "仅待付款", value: pending)
+            Text("显示 ${rows.size()} 笔")
+          }
+          Text(text: notice, role: WidgetRole.Muted)
+        }, center: Box(padding: Insets(top: 24.0, right: 24.0), content:
+          Table<Order>(rows: rows, identity: (Order order) { ValueKey(value: order.id) }, columns: [
+            TableColumn<Order>(id: "id", heading: "订单", display: (Order order) { order.id },
+              compare: (Order left, Order right) { left.id.compareCodePoints(right: right.id) }),
+            TableColumn<Order>(id: "customer", heading: "客户", display: (Order order) { order.customer }),
+            TableColumn<Order>(id: "total", heading: "金额", display: (Order order) { "¥ ${order.total.toPlainString()!!}" },
+              compare: (Order left, Order right) { left.total.compareTo(arg0: right.total) }),
+            TableColumn<Order>(id: "status", heading: "状态", cell: (Order order) {
+              Tag(text: orderStatusLabel(order.status), tone: if order.status == OrderStatus.Pending { Tone.Warning } else { Tone.Success })
+            }),
+            TableColumn<Order>(id: "action", heading: "操作", cell: (Order order) {
+              Button(text: "编辑", appearance: Appearance.Plain, action: () { this.select(order) })
+            })
+          ], selected: selection, sort: ordering)),
+          right: Box(size: SizeConstraints(width: Dimension.Fixed(340.0)), padding: Insets(top: 24.0),
+            content: Keyed(key: NodeKey.Named(editor.order.id), child: editor))))))
+  }
+}
+
+class OrderDraft { String customer BigDecimal total }
+
+class OrderEditor implements Widget {
+  Order order
+  Function<Void(Order)> save
+  private OrderDraft draft
+  FormController controller
+
+  String customer { get { draft.customer } set(next) { draft.customer = next } }
+  BigDecimal total { get { draft.total } set(next) { draft.total = next } }
+
+  OrderEditor(Order order, Function<Void(Order)> save) {
+    var initial = OrderDraft(customer: order.customer, total: order.total)
+    var customerBinding = Binding<String>(read: () { initial.customer }, write: (String next) { initial.customer = next })
+    var totalBinding = Binding<BigDecimal>(read: () { initial.total }, write: (BigDecimal next) { initial.total = next })
+    var form = FormController(fields: [
+      FormField<String>(name: "customer", value: customerBinding, control: (binding) { Input(value: binding, placeholder: "客户名称", key: NodeKey.Named("order-customer")) },
+        validator: (String value) { value.trim() != "" }, error: "请输入客户名称"),
+      FormField<BigDecimal>(name: "total", value: totalBinding, control: (binding) { InputNumber(value: binding, scale: 2) },
+        validator: (BigDecimal value) { value.compareTo(arg0: bigDecimalNew("0")!!) >= 0 },
+        equivalent: (BigDecimal left, BigDecimal right) { left.compareTo(arg0: right) == 0 }, error: "金额不能为负数")
+    ])
+    this.order = order
+    this.save = save
+    draft = initial
+    controller = form
+  }
+
+  Widget build() {
+    Card(title: order.id, content: Column(cross: CrossAlignment.Stretch, gap: 18.0) {
+      Text(text: "客户与金额", role: WidgetRole.Title)
+      Form(controller: controller, submitText: "保存订单", resetText: "重置修改", onSubmit: (FormSubmission submission) {
+        save(Order(id: order.id, customer: customer.trim(), total: total, status: order.status))
+        submission.accept()
+      })
+      Text(text: if controller.dirty() { "有未保存的修改" } else { "所有修改已保存" }, role: WidgetRole.Muted)
+      Text(text: "状态：${orderStatusLabel(order.status)}", role: WidgetRole.Muted)
+    })
+  }
+
+  Void dispose() { controller.cancel() }
+}

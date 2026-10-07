@@ -1,0 +1,41 @@
+package orders.test.workflow
+
+import orders.Order
+import orders.OrderBook
+import orders.OrderStatus
+import orders.OrderEditor
+import java.base.math.bigDecimalNew
+import std.testing.Test
+
+@Test
+Void filtersAndSavesTypedOrdersWithoutChangingIdentity() {
+  var book = OrderBook()
+  require(condition: book.filter(query: "SO-103", pendingOnly: false).size() == 3, message: "search filters by order id")
+  require(condition: book.filter(query: "", pendingOnly: true).size() == 3, message: "pending filter uses typed status")
+  var original = book.orders[0]
+  book.save(Order(id: original.id, customer: "Updated customer", total: bigDecimalNew("12.30")!!, status: OrderStatus.Paid))
+  require(condition: book.orders.size() == 6 && book.orders[0].id == original.id, message: "save preserves order identity and record count")
+  require(condition: book.orders[0].total.toPlainString() == "12.30", message: "save retains exact decimal precision")
+  require(condition: book.filter(query: "Updated", pendingOnly: true).isEmpty(), message: "saved status participates in filtering")
+}
+
+@Test
+Void orderEditorValidatesResetsAndAcceptsTheSavedBaseline() {
+  var book = OrderBook()
+  var editor = OrderEditor(order: book.orders[0], save: book.save)
+  editor.customer = ""
+  require(condition: editor.controller.dirty() && !editor.controller.validate(), message: "empty customer is a dirty invalid edit")
+  editor.controller.reset()
+  require(condition: editor.customer == book.orders[0].customer && !editor.controller.dirty(), message: "reset restores the original customer")
+  editor.customer = "New customer"
+  editor.total = bigDecimalNew("10.25")!!
+  editor.controller.submit((ticket) {
+    book.save(Order(id: editor.order.id, customer: editor.customer, total: editor.total, status: editor.order.status))
+    ticket.accept()
+  })
+  require(condition: book.orders[0].customer == "New customer" && !editor.controller.dirty(), message: "successful save accepts the current form baseline")
+  editor.customer = "Another edit"
+  editor.controller.reset()
+  require(condition: editor.customer == "New customer", message: "reset uses the last accepted save")
+  editor.dispose()
+}
