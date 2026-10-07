@@ -219,7 +219,7 @@ class TableExample implements Widget {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
     Binding<TableSort?> order = Binding<TableSort?>(read: () { sorted }, write: (TableSort? next) { sorted = next })
     Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
-      Table<String>(rows: if showPending { ["Alice", "Bob", "Charlie"] } else { ["Alice", "Charlie"] },
+      Table<String>(identity: (String row) { ValueKey(value: row) }, rows: if showPending { ["Alice", "Bob", "Charlie"] } else { ["Alice", "Charlie"] },
         columns: [DataColumn<String>(id: "member", heading: "成员", compare: (String left, String right) { left.compareCodePoints(right: right) }, display: (String row) { row }),
           DataColumn<String>(id: "role", heading: "角色", display: (String row) { if row == "Alice" { "设计" } else { "开发" } })],
         selected: selection, sort: order)
