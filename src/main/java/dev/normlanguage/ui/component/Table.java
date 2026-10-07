@@ -43,6 +43,7 @@ public class Table<T> extends TableView<T> implements AutoCloseable {
             queued = false;
             if (closed) return;
             var nextCells = cells.stream().filter(cell -> !cell.isEmpty() && cell.getItem() != null && cell.getIndex() >= 0
+                    && cell.getIndex() < getItems().size() && java.util.Objects.equals(cell.getItem(), getItems().get(cell.getIndex()))
                     && cell.getScene() != null && getColumns().contains(cell.getTableColumn()))
                     .sorted(java.util.Comparator.comparingInt((WidgetCell cell) -> cell.getIndex()).thenComparing(cell -> cell.columnId)).toList();
             var nextSlots = nextCells.stream().map(cell -> new TableCellSlot<>(cell.columnId, cell.getIndex(), cell.getItem())).toList();
@@ -82,15 +83,18 @@ public class Table<T> extends TableView<T> implements AutoCloseable {
         visibleCells = java.util.List.of();
         visibleSlots = java.util.List.of();
         mountedNodes = java.util.List.of();
-        if (sorted != null) sorted.comparatorProperty().unbind();
-        getColumns().clear();
         setItems(javafx.collections.FXCollections.observableArrayList());
+        getColumns().clear();
+        if (sorted != null) sorted.comparatorProperty().unbind();
         source = null;
         filtered = null;
         sorted = null;
     }
 
-    public Table() { getStyleClass().add("norm-table"); }
+    public Table() {
+        getStyleClass().add("norm-table");
+        setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+    }
     public void setSource(ObservableList<T> rows) {
         if (sorted != null) sorted.comparatorProperty().unbind();
         source = java.util.Objects.requireNonNull(rows);
