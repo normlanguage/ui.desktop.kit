@@ -10,8 +10,8 @@ import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.kit.internal.Tabs as TabsControl
-import javafx.ScrollPane
-import javafx.TextArea as TextAreaControl
+import ui.fx.native.ScrollPane
+import ui.fx.native.TextArea as TextAreaControl
 import ui.View
 import ui.NativeView
 import ui.Widget

@@ -6,7 +6,7 @@ import ui.NodeKey
 import ui.ViewScope
 import ui.UiConfiguration
 import ui.fx.nativeComponent as fxComponent
-import javafx.Node
+import ui.fx.native.Node
 import ui.theme.Theme
 import ui.fx.kit.internal.kitEnvironmentApply
 import ui.fx.kit.internal.kitEnvironmentClear

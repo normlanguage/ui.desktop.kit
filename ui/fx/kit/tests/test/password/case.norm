@@ -11,8 +11,8 @@ import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
 import ui.fx.kit.Input
-import javafx.TextField
-import javafx.PasswordField
+import ui.fx.native.TextField
+import ui.fx.native.PasswordField
 
 class PasswordState { String text = "local-test" Boolean completed = false String? failure = null }
 

@@ -1,0 +1,19 @@
+package samples.fixtures
+
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.fx.themeCss
+import std.filesystem.Path
+import std.filesystem.writeTextAtomic
+import std.io.TextEncoding
+
+Void main() {
+  var themes = ThemeManager(definition: ThemeDefinition(primary: Color(hex: "#1677FF")))
+  try {
+    writeTextAtomic(path: Path("build/themes/light.css"), text: themeCss(themes.current()), encoding: TextEncoding.Utf8)
+    themes.setMode(ThemeMode.Dark)
+    writeTextAtomic(path: Path("build/themes/dark.css"), text: themeCss(themes.current()), encoding: TextEncoding.Utf8)
+  } finally { themes.close() }
+}

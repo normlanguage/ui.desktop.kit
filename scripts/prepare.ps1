@@ -1,59 +1,15 @@
-param(
-    [string]$UiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui'),
-    [string]$UiFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.fx'),
-    [string]$DiRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../di'),
-    [string]$JavaFxRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../javafx'),
-    [string]$ThemeRoot = (Join-Path (Split-Path $PSScriptRoot -Parent) '../ui.theme')
-)
+param([string]$NormHome = (Join-Path (Split-Path $PSScriptRoot -Parent) '.norm-home'))
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-$ui = (Resolve-Path -LiteralPath $UiRoot).Path
-$uiFx = (Resolve-Path -LiteralPath $UiFxRoot).Path
-$di = (Resolve-Path -LiteralPath $DiRoot).Path
-$javaFx = (Resolve-Path -LiteralPath $JavaFxRoot).Path
-$theme = (Resolve-Path -LiteralPath $ThemeRoot).Path
-$norm = Join-Path $PSScriptRoot 'norm.ps1'
-$packages = Join-Path $root '.norm-home/.norm/cache/packages'
-$maven = Join-Path $root '.norm-home/.norm/cache/maven'
-New-Item -ItemType Directory -Force $packages, $maven | Out-Null
-
-function Invoke-Norm {
-    param([string[]]$Arguments)
-    & $norm @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "Norm command failed: $($Arguments -join ' ')" }
-}
-
-$themeRepository = Join-Path $theme 'build/repository'
-if (!(Test-Path -LiteralPath (Join-Path $themeRepository 'dev/normlanguage/theme-colors/1/theme-colors-1.jar'))) {
-    throw 'Theme color artifact is missing; build the theme repository first'
-}
-Copy-Item -Path (Join-Path $themeRepository '*') -Destination $maven -Recurse -Force
-
-Invoke-Norm -Arguments @('package', (Join-Path $theme 'ui/theme'), '--output', $packages)
-$diWorkspace = Split-Path $di -Parent
-foreach ($module in @('jakarta-inject/jakarta/inject', 'jakarta-annotation/jakarta/annotation', 'micronaut-inject/micronaut/inject', 'micronaut-inject-processor/micronaut/inject/processor')) {
-    Invoke-Norm -Arguments @('package', (Join-Path $diWorkspace $module), '--output', $packages)
-}
-Invoke-Norm -Arguments @('package', (Join-Path $di 'di'), '--output', $packages)
-Invoke-Norm -Arguments @('package', (Join-Path $javaFx 'javafx'), '--output', $packages)
-Invoke-Norm -Arguments @('package', (Join-Path $ui 'ui'), '--output', $packages)
-& (Join-Path $uiFx 'gradlew.bat') -p $uiFx publish --console=plain
-if ($LASTEXITCODE -ne 0) { throw 'JavaFX layout artifact build failed' }
-Copy-Item -Path (Join-Path $uiFx 'build/repository/*') -Destination $maven -Recurse -Force
-Invoke-Norm -Arguments @('package', (Join-Path $uiFx 'ui/fx'), '--output', $packages)
-
-& (Join-Path $root 'gradlew.bat') -p $root "-PuiRoot=$ui" publish normDependencies --console=plain
-if ($LASTEXITCODE -ne 0) { throw 'Java component artifact build failed' }
-Copy-Item -Path (Join-Path $root 'build/repository/*') -Destination $maven -Recurse -Force
-
-$bindingModule = Join-Path $root 'ui/fx/kit/module.norm'
-$source = Get-Content -LiteralPath $bindingModule -Raw
-$withoutPin = [regex]::Replace($source,
-    '(artifact: "ui-fx-kit", version: "1"), resolution: sha256\("[a-f0-9]+"\)', '$1')
-if ($withoutPin -eq $source -and $source -notmatch 'artifact: "ui-fx-kit", version: "1"') {
-    throw 'Component Java artifact declaration is missing'
-}
-if ($withoutPin -ne $source) { Set-Content -LiteralPath $bindingModule -Value $withoutPin -NoNewline }
-Invoke-Norm -Arguments @('resolve', (Join-Path $root 'ui/fx/kit'))
-Invoke-Norm -Arguments @('package', (Join-Path $root 'ui/fx/kit'), '--output', $packages)
-Invoke-Norm -Arguments @('check', (Join-Path $root 'samples/gallery'))
+$module = Join-Path $root 'ui/fx/kit/module.norm'
+$source = [IO.File]::ReadAllText($module)
+if ($source -notmatch 'resolution: sha256\("[a-f0-9]{64}"\)') { throw 'Module resolution is not pinned; use update-pin.ps1 intentionally' }
+& (Join-Path $PSScriptRoot 'build.ps1') -NormHome $NormHome
+$previous = $env:JAVA_TOOL_OPTIONS
+try {
+    $env:JAVA_TOOL_OPTIONS = "$previous --enable-native-access=ALL-UNNAMED -Duser.home=`"$NormHome`""
+    $executable = if ($env:NORM_EXECUTABLE) { $env:NORM_EXECUTABLE } else { 'norm' }
+    & $executable check (Join-Path $root 'ui/fx/kit')
+    if ($LASTEXITCODE -ne 0) { throw 'Module check failed' }
+} finally { $env:JAVA_TOOL_OPTIONS = $previous }
+if ([IO.File]::ReadAllText($module) -ne $source) { throw 'Verification changed the module descriptor' }

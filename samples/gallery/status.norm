@@ -25,7 +25,7 @@ import ui.fx.kit.Affix
 import ui.fx.kit.BorderBeam
 import ui.fx.kit.App
 import ui.fx.kit.ConfigProvider
-import ui.fx.kit.Surface
+import gallery.Surface
 
 class AlertExample implements Widget {
   private Boolean closable = true
@@ -164,7 +164,7 @@ class UtilExample implements Widget {
   Widget build() {
     Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("状态与生命周期由 Norm UI 管理，控件使用相同的组件树。")
-      Text("Surface 为组合内容提供样式入口；业务代码无需操作 JavaFX Node。")
+      Text("示例通过组合控件提供样式入口。")
       Surface(styleClass: "gallery-preview", content: Row(gap: 10.0) {
         Text("已执行 " + count.toString() + " 次")
         Button(text: "更新状态", action: () { count = count + 1 })

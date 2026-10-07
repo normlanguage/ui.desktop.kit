@@ -10,7 +10,7 @@ import ui.NodeKey
 import ui.WidgetRole
 import std.io.Resource
 import std.observation.observeFields
-import javafx.TextField
+import ui.fx.native.TextField
 import ui.fx.kit.internal.inputPassword
 import ui.fx.kit.internal.valueLinkText
 import ui.fx.kit.internal.Checkbox as CheckboxControl
@@ -689,6 +689,11 @@ value Form implements Widget {
   String resetText
 
   Form(List<FormEntry> fields, Function<Void()> onSubmit, String submitText = "提交", String resetText = "重置") {
+    Map<String, Boolean> names = Map<>()
+    for field : fields {
+      if names.containsKey(field.name()) { throw Exception(message: "Duplicate form field: ${field.name()}") }
+      names[field.name()] = true
+    }
     this.fields = fields
     this.onSubmit = onSubmit
     this.submitText = submitText

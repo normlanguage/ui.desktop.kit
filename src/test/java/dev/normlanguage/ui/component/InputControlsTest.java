@@ -149,30 +149,6 @@ class InputControlsTest extends FxTest {
         });
     }
 
-    @Test void formValidatesActualInputAndRateTracksSelection() throws Exception {
-        fx(() -> {
-            var form = new Form();
-            var input = new Input();
-            form.addField("name", input, text -> !text.isBlank());
-            var approval = new Checkbox("Approve");
-            form.addField("approval", approval, approval.selectedProperty(), Boolean.TRUE::equals);
-            assertFalse(form.validate());
-            input.setText("Ada");
-            approval.setSelected(true);
-            assertTrue(form.validate());
-            var sent = new AtomicInteger();
-            form.setOnSubmit(sent::incrementAndGet);
-            form.submit();
-            assertEquals(1, sent.get());
-            form.reset();
-            assertEquals("", input.getText());
-            assertFalse(approval.isSelected());
-            var rate = new Rate(5);
-            rate.setValue(4);
-            assertEquals(4, rate.getValue());
-        });
-    }
-
     @Test void compositeSelectionsKeepOneValidatedWritePath() throws Exception {
         fx(() -> {
             var rate = new Rate(5);

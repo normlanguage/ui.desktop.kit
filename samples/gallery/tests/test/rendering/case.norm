@@ -11,8 +11,8 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
-import ui.fx.kit.internal.utilCapture
-import ui.fx.kit.internal.utilRequireButton
+import gallery.internal.gallerySupportCapture
+import gallery.internal.gallerySupportRequireButton
 import ui.theme.ThemeManager
 import ui.theme.ThemeDefinition
 import ui.theme.Color
@@ -33,8 +33,8 @@ class CaptureSequence {
   Void begin() {
     gallery.select(pages[1])
     renderer.render(gallery)
-    var selected = utilRequireButton(arg0: application.scene(), arg1: "FloatButton  悬浮按钮")!!
-    var previous = utilRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!
+    var selected = gallerySupportRequireButton(arg0: application.scene(), arg1: "FloatButton  悬浮按钮")!!
+    var previous = gallerySupportRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!
     if !selected.getStyle()!!.contains(value: "-norm-primary-soft") || !previous.getStyle()!!.contains(value: "-norm-neutral-plain") {
       this.fail("Programmatic selection did not update the sidebar")
       return
@@ -50,17 +50,17 @@ class CaptureSequence {
       return
     }
     var page = pages[progress.count]
-    utilRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/" + page.name + ".png")!!.toPath()!!, arg2: 1440, arg3: 1000,
+    gallerySupportCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/" + page.name + ".png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
-        var selected = utilRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!
+        var selected = gallerySupportRequireButton(arg0: application.scene(), arg1: page.name + "  " + page.chinese)!!
         if !selected.getStyle()!!.contains(value: "-norm-primary-soft") {
           progress.failure = "Sidebar selection did not follow " + page.name
           application.close()
           return
         }
-        if page.name != "Button" && !utilRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!.getStyle()!!.contains(value: "-norm-neutral-plain") {
+        if page.name != "Button" && !gallerySupportRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!.getStyle()!!.contains(value: "-norm-neutral-plain") {
           progress.failure = "Previous sidebar selection was retained on " + page.name
           application.close()
           return
@@ -74,43 +74,43 @@ class CaptureSequence {
   }
 
   Void inspectInvalidForm() {
-    utilRequireButton(arg0: application.scene(), arg1: "Form  表单")!!.fire()
-    utilRequireButton(arg0: application.scene(), arg1: "提交")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "Form  表单")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "提交")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Form-invalid.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
+    gallerySupportCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Form-invalid.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () { application.later(() { this.inspectSourcePage() }) },
       arg5: (String? failure) { this.fail(if failure != null { failure } else { "Form capture failed" }) })
   }
 
   Void inspectSourcePage() {
-    utilRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!.fire()
-    utilRequireButton(arg0: application.scene(), arg1: "查看 Norm 源码")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "Button  按钮")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "查看 Norm 源码")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-source.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
+    gallerySupportCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-source.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
-        utilRequireButton(arg0: application.scene(), arg1: "收起源码")
+        gallerySupportRequireButton(arg0: application.scene(), arg1: "收起源码")
         application.later(() { this.inspectApiPage() })
       }, arg5: (String? failure) { this.fail(if failure != null { failure } else { "Source capture failed" }) })
   }
 
   Void inspectApiPage() {
-    utilRequireButton(arg0: application.scene(), arg1: "收起源码")!!.fire()
-    utilRequireButton(arg0: application.scene(), arg1: "组件 API")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "收起源码")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "组件 API")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-api.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
+    gallerySupportCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Button-api.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
-        utilRequireButton(arg0: application.scene(), arg1: "收起 API")
+        gallerySupportRequireButton(arg0: application.scene(), arg1: "收起 API")
         application.later(() { this.inspectDarkPage() })
       }, arg5: (String? failure) { this.fail(if failure != null { failure } else { "API capture failed" }) })
   }
 
   Void inspectDarkPage() {
-    utilRequireButton(arg0: application.scene(), arg1: "Table  表格")!!.fire()
-    utilRequireButton(arg0: application.scene(), arg1: "深色")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "Table  表格")!!.fire()
+    gallerySupportRequireButton(arg0: application.scene(), arg1: "深色")!!.fire()
     renderer.render(gallery)
-    utilCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Table-dark.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
+    gallerySupportCapture(arg0: application.scene(), arg1: fileNew("build/screenshots/norm/interactions/Table-dark.png")!!.toPath()!!, arg2: 1440, arg3: 1000,
       arg4: () {
-        utilRequireButton(arg0: application.scene(), arg1: "浅色")
+        gallerySupportRequireButton(arg0: application.scene(), arg1: "浅色")
         progress.completed = true
         application.close()
       }, arg5: (String? failure) { this.fail(if failure != null { failure } else { "Dark capture failed" }) })

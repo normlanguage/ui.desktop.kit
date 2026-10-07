@@ -11,7 +11,7 @@ import ui.Renderer
 import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
-import ui.fx.LayoutPane
+import ui.fx.native.Pane
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
 import ui.fx.kit.Button as ComponentButton
@@ -90,7 +90,7 @@ Void mountsAllGeneralLayoutAndNavigationWidgetsInJavaFx() {
         renderer.render(preview(state, title: "开始"))
         application.root(fxHandle(renderer.node()))
         switch fxHandle(renderer.node()).nativeNode() {
-          case LayoutPane pane { require(condition: !pane.getChildren()!!.isEmpty(), message: "ui layout protocol renders the component page") }
+          case Pane pane { require(condition: !pane.getChildren()!!.isEmpty(), message: "ui layout protocol renders the component page") }
           case _ { require(condition: false, message: "component page uses the shared layout backend") }
         }
         state.page = 2

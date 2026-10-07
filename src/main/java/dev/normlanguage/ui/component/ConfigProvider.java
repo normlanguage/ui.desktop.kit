@@ -78,11 +78,6 @@ public class ConfigProvider extends StackPane implements AutoCloseable {
         setStyle(themeCss.get() + effective.toCss());
         pseudoClassStateChanged(THEMED, !themeCss.get().isBlank());
     }
-    public final void connectTheme(java.util.function.Consumer<ThemeSink> attach, Runnable detach) {
-        Objects.requireNonNull(attach);
-        Objects.requireNonNull(detach);
-        connectTheme(receiver -> { attach.accept(new ThemeSink(receiver)); return detach; });
-    }
     public final void connectTheme(java.util.function.Function<java.util.function.Consumer<String>, Runnable> subscribe) {
         Util.requireFxThread();
         if (closed) throw new IllegalStateException("Component scope is closed");
