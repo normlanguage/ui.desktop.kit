@@ -8,29 +8,29 @@ import ui.Row as Horizontal
 import ui.Binding
 import java.base.time.LocalDate
 import java.base.time.localDateOf
-import ui.kit.Button as ActionButton
-import ui.kit.Avatar
-import ui.kit.Badge
-import ui.kit.Calendar
-import ui.kit.Card
-import ui.kit.Carousel
-import ui.kit.Collapse
-import ui.kit.Description
-import ui.kit.Descriptions
-import ui.kit.Empty
-import ui.kit.Image
-import ui.kit.ListView
-import ui.kit.Listy
-import ui.kit.QRCode
-import ui.kit.Segmented
-import ui.kit.Statistic
-import ui.kit.Table
-import ui.kit.TableColumn as DataColumn
-import ui.kit.TableSort
-import ui.kit.Tag
-import ui.kit.Timeline
-import ui.kit.TimelineEntry
-import ui.kit.Tree
+import ui.fx.kit.Button as ActionButton
+import ui.fx.kit.Avatar
+import ui.fx.kit.Badge
+import ui.fx.kit.Calendar
+import ui.fx.kit.Card
+import ui.fx.kit.Carousel
+import ui.fx.kit.Collapse
+import ui.fx.kit.Description
+import ui.fx.kit.Descriptions
+import ui.fx.kit.Empty
+import ui.fx.kit.Image
+import ui.fx.kit.ListView
+import ui.fx.kit.Listy
+import ui.fx.kit.QRCode
+import ui.fx.kit.Segmented
+import ui.fx.kit.Statistic
+import ui.fx.kit.Table
+import ui.fx.kit.TableColumn as DataColumn
+import ui.fx.kit.TableSort
+import ui.fx.kit.Tag
+import ui.fx.kit.Timeline
+import ui.fx.kit.TimelineEntry
+import ui.fx.kit.Tree
 
 class AvatarExample implements Widget {
   Boolean photo = false

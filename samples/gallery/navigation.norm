@@ -6,19 +6,19 @@ import ui.Binding
 import ui.Text
 import ui.Column
 import ui.Row
-import ui.kit.Button
-import ui.kit.Anchor
-import ui.kit.AnchorSection
-import ui.kit.Breadcrumb
-import ui.kit.BreadcrumbItem
-import ui.kit.Dropdown
-import ui.kit.Menu
-import ui.kit.MenuGroup
-import ui.kit.MenuItem
-import ui.kit.Pagination
-import ui.kit.Steps
-import ui.kit.Tabs
-import ui.kit.Tab
+import ui.fx.kit.Button
+import ui.fx.kit.Anchor
+import ui.fx.kit.AnchorSection
+import ui.fx.kit.Breadcrumb
+import ui.fx.kit.BreadcrumbItem
+import ui.fx.kit.Dropdown
+import ui.fx.kit.Menu
+import ui.fx.kit.MenuGroup
+import ui.fx.kit.MenuItem
+import ui.fx.kit.Pagination
+import ui.fx.kit.Steps
+import ui.fx.kit.Tabs
+import ui.fx.kit.Tab
 
 class AnchorExample implements Widget {
   Widget build() {

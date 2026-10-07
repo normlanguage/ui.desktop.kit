@@ -1,0 +1,42 @@
+package ui.fx.kit
+
+import ui.Widget
+import ui.NodeKey
+import javafx.Orientation
+import ui.fx.kit.internal.Divider as DividerControl
+import ui.fx.kit.internal.Splitter as SplitterControl
+import ui.fx.kit.internal.dividerNew
+import ui.fx.kit.internal.navigationLayoutAdapterSplitter
+import ui.fx.kit.internal.utilCloseNode
+import ui.fx.kit.internal.hostItems
+
+value Divider implements Widget {
+  Boolean vertical = false
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<DividerControl>(kind: "ui.fx.kit.Divider",
+      create: () { dividerNew() }, node: (control) { control },
+      update: (control, scope) {
+        control.setOrientation(if vertical { Orientation.VERTICAL } else { Orientation.HORIZONTAL })
+      },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Splitter implements Widget {
+  List<Widget> children
+  Boolean vertical = false
+  Double dividerPosition = 0.5
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<SplitterControl>(kind: "ui.fx.kit.Splitter",
+      create: () { navigationLayoutAdapterSplitter()!! }, node: (control) { control },
+      update: (control, scope) {
+        control.setOrientation(if vertical { Orientation.VERTICAL } else { Orientation.HORIZONTAL })
+      }, children: children,
+      arrange: (control, nodes) { navigationLayoutAdapterSplitter(arg0: control, arg1: hostItems(nodes), arg2: dividerPosition) },
+      close: (control) { utilCloseNode(control) }, key: key)
+  }
+}

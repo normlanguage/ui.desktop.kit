@@ -1,1 +1,1 @@
-rootProject.name = "ui-component"
+rootProject.name = "ui-fx-kit"

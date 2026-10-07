@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: normlanguage/ui
-          ref: c72d7ac0f500606d2ffdacf274d1c72a51171413
+          ref: 8c37621cb864e1eaf8376dc44e926727e9e15ffd
           path: .tmp/ui
       - uses: actions/setup-java@v4
         with:

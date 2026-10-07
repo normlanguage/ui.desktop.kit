@@ -4,15 +4,15 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.Binding
 import ui.fx.FxApplication
-import ui.kit.App
-import ui.kit.Switch
-import ui.kit.fx.utilRequireSwitch
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.Color
+import ui.fx.kit.App
+import ui.fx.kit.Switch
+import ui.fx.kit.internal.utilRequireSwitch
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
 
 Module module() {
-  module(dependencies: [dependency(repository: "github", name: "ui", version: 7), dependency(repository: "github", name: "ui.fx", version: 5), dependency(repository: "github", name: "ui.kit", version: 6), dependency(repository: "github", name: "ui.kit.fx", version: 6), dependency(repository: "github", name: "theme", version: 2)])
+  module(dependencies: [dependency(repository: "github", name: "ui", version: 7), dependency(repository: "github", name: "ui.fx", version: 5), dependency(repository: "github", name: "ui.fx.kit", version: 5), dependency(repository: "github", name: "ui.theme", version: 2)])
 }
 class State { Boolean enabled = false }
 Void main() {

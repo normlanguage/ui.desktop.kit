@@ -6,12 +6,12 @@ import ui.Binding
 import ui.Text
 import ui.Column
 import ui.Row
-import theme.Tone
-import theme.Appearance
-import ui.kit.Button
-import ui.kit.FloatButton
-import ui.kit.Icon
-import ui.kit.Typography
+import ui.theme.Tone
+import ui.theme.Appearance
+import ui.fx.kit.Button
+import ui.fx.kit.FloatButton
+import ui.fx.kit.Icon
+import ui.fx.kit.Typography
 
 class ButtonExample implements Widget {
   private Integer presses = 0

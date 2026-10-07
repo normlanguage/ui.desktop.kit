@@ -11,11 +11,11 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
-import ui.kit.fx.utilCapture
-import ui.kit.fx.utilRequireButton
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.Color
+import ui.fx.kit.internal.utilCapture
+import ui.fx.kit.internal.utilRequireButton
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
 
 class RenderProgress {
   Integer count = 0

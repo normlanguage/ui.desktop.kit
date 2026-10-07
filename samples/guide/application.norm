@@ -7,23 +7,23 @@ import ui.ForEach
 import ui.ValueKey
 import ui.NodeKey
 import ui.fx.DesktopApp
-import ui.kit.App
-import ui.kit.ConfigProvider
+import ui.fx.kit.App
+import ui.fx.kit.ConfigProvider
 import ui.UiConfiguration
 import ui.UiProvider
 import ui.Column
 import ui.Row
 import ui.Text
-import ui.kit.Input
-import ui.kit.Button
-import ui.kit.Tabs
-import ui.kit.Tab
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.ThemeMode
-import theme.Color
-import theme.Tone
-import theme.Appearance
+import ui.fx.kit.Input
+import ui.fx.kit.Button
+import ui.fx.kit.Tabs
+import ui.fx.kit.Tab
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.theme.Tone
+import ui.theme.Appearance
 
 class Notes implements Widget {
   ThemeManager theme

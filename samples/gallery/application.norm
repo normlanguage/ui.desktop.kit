@@ -12,21 +12,21 @@ import ui.Row
 import ui.Scroll
 import ui.WidgetRole
 import ui.Binding
-import theme.ThemeManager
-import theme.ThemeDefinition
-import theme.ThemeMode
-import theme.Color
-import theme.Tone
-import theme.Appearance
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.theme.Tone
+import ui.theme.Appearance
 import ui.UiConfiguration
 import ui.UiProvider
-import ui.kit.App
-import ui.kit.Button
-import ui.kit.Input
+import ui.fx.kit.App
+import ui.fx.kit.Button
+import ui.fx.kit.Input
 import ui.Dock
-import ui.kit.Surface
-import ui.kit.Typography
-import ui.kit.resourceText
+import ui.fx.kit.Surface
+import ui.fx.kit.Typography
+import ui.fx.kit.resourceText
 
 Void main() {
   var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#1677FF"), neutral: Color(hex: "#808080")))

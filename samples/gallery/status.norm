@@ -9,23 +9,23 @@ import ui.Column
 import ui.Row
 import ui.Text
 import ui.Binding
-import theme.Color
-import theme.ThemeDefinition
-import theme.ThemeManager
-import ui.kit.Button
-import ui.kit.Alert
-import ui.kit.Message
-import ui.kit.Notification
-import ui.kit.Progress
-import ui.kit.Result
-import ui.kit.Skeleton
-import ui.kit.Spin
-import ui.kit.Watermark
-import ui.kit.Affix
-import ui.kit.BorderBeam
-import ui.kit.App
-import ui.kit.ConfigProvider
-import ui.kit.Surface
+import ui.theme.Color
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeManager
+import ui.fx.kit.Button
+import ui.fx.kit.Alert
+import ui.fx.kit.Message
+import ui.fx.kit.Notification
+import ui.fx.kit.Progress
+import ui.fx.kit.Result
+import ui.fx.kit.Skeleton
+import ui.fx.kit.Spin
+import ui.fx.kit.Watermark
+import ui.fx.kit.Affix
+import ui.fx.kit.BorderBeam
+import ui.fx.kit.App
+import ui.fx.kit.ConfigProvider
+import ui.fx.kit.Surface
 
 class AlertExample implements Widget {
   private Boolean closable = true
