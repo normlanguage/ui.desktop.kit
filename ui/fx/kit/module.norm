@@ -3,7 +3,7 @@ Module module() {
     exports: ["general", "inputs", "layout", "navigation", "display", "feedback", "configuration", "status", "notices", "component_bridge"],
     dependencies: [dependency(repository: "github", name: "ui", version: 8), dependency(repository: "github", name: "ui.fx", version: 6), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "ui.theme", version: 3)],
     binding: jarBinding(
-      target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-kit", version: "2", resolution: sha256("521de9f4b4701450eef08cb2d18b8baf9c2991b594746635a10d9ab2f4692796")),
+      target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-kit", version: "2", resolution: sha256("d85ae14c2793576e9113dd908400c171abf793b0cc1eb41fb9d10a3df149d694")),
       api: [
         jarType(name: "dev.normlanguage.ui.component.KitEnvironment", alias: "internal.KitEnvironment", members: ["apply", "clear"]),
         jarType(name: "dev.normlanguage.ui.component.Upload.Item", alias: "internal.UploadItem", members: ["getFile", "getStatus", "getProgress", "statusProperty", "progressProperty"]),
