@@ -21,7 +21,7 @@ jobs:
           lfs: true
       - uses: normlanguage/registry/.github/actions/setup-norm@d229852448570c786a3f86e62c7db36769ed9a18
         with:
-          source-ref: 707b88f093796d366785f0a24554c7fa4cdcfca1
+          source-ref: f964fa87e1ca5851d4ff2d796e01c093c13ad247
       - uses: actions/setup-java@v4
         with:
           distribution: oracle
