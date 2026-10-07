@@ -15,6 +15,8 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
+import ui.fx.native.Node
+import ui.fx.native.Pane
 import ui.fx.kit.Input
 import ui.fx.kit.AutoComplete
 import ui.fx.kit.Cascader
@@ -24,7 +26,8 @@ import ui.fx.kit.ColorPicker
 import ui.fx.kit.DatePicker
 import ui.fx.kit.Form
 import ui.fx.kit.FormField
-import ui.fx.kit.FormFieldState
+import ui.fx.kit.FormController
+import ui.fx.kit.FormSubmission
 import ui.fx.kit.InputNumber
 import ui.fx.kit.Mentions
 import ui.fx.kit.Radio
@@ -92,7 +95,7 @@ Void mountsEveryInputWidgetInARealJavaFxWindow() {
     Binding<Double> amount = Binding<Double>(read: () { state.amount }, write: (Double next) { state.amount = next })
     Binding<String> color = Binding<String>(read: () { state.color }, write: (String next) { state.color = next })
     Binding<NumericRange> range = Binding<NumericRange>(read: () { state.range }, write: (NumericRange next) { state.range = next })
-    var field = FormField<String>(name: "title", state: FormFieldState<String>(initial: state.text), control: Input(placeholder: "标题", value: text),
+    var field = FormField<String>(name: "title", control: (binding) { Input(placeholder: "标题", value: binding) },
       value: text, validator: (String next) { next != "" }, error: "请输入标题")
     List<Widget> widgets = [
       Input(placeholder: "标题", value: text),
@@ -102,7 +105,7 @@ Void mountsEveryInputWidgetInARealJavaFxWindow() {
       Checkbox(text: "同意", value: checked),
       ColorPicker(hex: color),
       DatePicker(value: date),
-      Form(fields: [field], onSubmit: () { state.submissions = state.submissions + 1 }),
+      Form(controller: FormController(fields: [field]), onSubmit: (submission) { state.submissions = state.submissions + 1 submission.accept() }),
       InputNumber(value: number, scale: 2),
       Mentions(value: text, suggestions: ["林安"], placeholder: "提及"),
       Radio(text: "选项", value: checked),
@@ -277,47 +280,92 @@ Void uploadCancellationReachesOwnedNormTask() {
 }
 
 Void mountedFormValidatesSubmitsAndRestoresItsInitialValues() {
-    var application = FxApplication("Form lifecycle verification")
-    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
-    var state = InputState()
-    var outcome = RuntimeOutcome()
-    Binding<String> title = Binding<String>(read: () { state.text }, write: (String next) { state.text = next })
-    var fieldState = FormFieldState<String>(initial: state.text)
-    var field = FormField<String>(name: "title", state: fieldState, control: Input(placeholder: "任务标题", value: title),
-      value: title, validator: (String next) { next != "" }, error: "请输入标题")
-    var form = Form(fields: [field], onSubmit: () { state.submissions = state.submissions + 1 })
-    application.run(build: () {
+  var application = FxApplication("Form lifecycle verification")
+  var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+  var state = InputState()
+  var outcome = RuntimeOutcome()
+  var title = Binding<String>(read: () { state.text }, write: (next) { state.text = next })
+  var field = FormField<String>(name: "title", value: title,
+    control: (binding) { Input(placeholder: "任务标题", value: binding) },
+    validator: (next) { next != "" }, error: "请输入标题")
+  var controller = FormController(fields: [field])
+  var tickets = FormTickets()
+  var form = Form(controller: controller, onSubmit: (submission) {
+    state.submissions = state.submissions + 1
+    tickets.values.add(submission)
+  })
+  application.run(build: () {
+    renderer.render(form)
+    application.root(fxHandle(renderer.node()))
+    application.later(() {
       try {
+        var initialInput = formInput(fxHandle(renderer.node()).nativeNode())
+        initialInput.setText("")
+        require(condition: state.text == "" && field.touched(), message: "native field edit reaches the wrapped model binding")
+        require(condition: !form.submit() && state.submissions == 0 && field.error() != null,
+          message: "mounted form rejects invalid data")
+        renderer.render(Form(controller: controller, onSubmit: form.onSubmit, submitText: "保存任务"))
+        require(condition: field.error() != null, message: "validation survives description rebuild")
+        require(condition: formInput(fxHandle(renderer.node()).nativeNode()) == initialInput, message: "validation error retains the native editing control")
+        field.binding().value = "真实任务"
         renderer.render(form)
-        application.root(fxHandle(renderer.node()))
-        state.text = ""
-        require(condition: !form.submit() && state.submissions == 0 && fieldState.invalid,
-          message: "mounted form rejects invalid data without submitting")
-        var redrawn = Form(fields: [FormField<String>(name: "title", state: fieldState,
-          control: Input(placeholder: "新的任务标题", value: title), value: title,
-          validator: (String next) { next != "" && next != "短" }, error: "请填写完整任务标题")],
-          onSubmit: () { state.submissions = state.submissions + 1 })
-        renderer.render(redrawn)
-        require(condition: fieldState.invalid, message: "mounted form retains validation after a new description")
-        state.text = "短"
-        require(condition: !redrawn.submit() && state.submissions == 0,
-          message: "mounted form applies the replacement validator")
-        state.text = "真实任务"
-        require(condition: redrawn.submit() && state.submissions == 1 && !fieldState.invalid,
-          message: "mounted form validates and submits once")
-        renderer.render(redrawn)
-        redrawn.reset()
-        renderer.render(redrawn)
-        require(condition: state.text == "开始" && redrawn.validate(),
-          message: "mounted form reset restores its initial typed value")
+        require(condition: formInput(fxHandle(renderer.node()).nativeNode()) == initialInput, message: "clearing validation error retains the native editing control")
+        require(condition: form.submit() && !form.submit() && state.submissions == 1 && controller.pending(),
+          message: "mounted form submits only once while pending")
+        tickets.values[0].accept()
+        require(condition: !controller.dirty(), message: "accept establishes a clean baseline")
+        field.binding().value = "编辑草稿"
+        controller.reset()
+        require(condition: state.text == "真实任务" && !controller.dirty(), message: "reset restores accepted typed data")
+        form.submit()
+        var replacementState = InputState()
+        var replacementValue = Binding<String>(read: () { replacementState.text }, write: (next) { replacementState.text = next })
+        var replacementField = FormField<String>(name: "title", value: replacementValue,
+          control: (binding) { Input(placeholder: "另一项任务", value: binding) },
+          validator: (next) { next != "" }, error: "另一项任务必须有标题")
+        var replacementController = FormController(fields: [replacementField])
+        var replacement = Form(controller: replacementController, onSubmit: (submission) { tickets.values.add(submission) })
+        renderer.render(replacement)
+        tickets.values[1].reject(message: "旧表单迟到失败")
+        require(condition: !controller.pending() && controller.message() == null, message: "controller replacement invalidates the old submission")
+        formInput(fxHandle(renderer.node()).nativeNode()).setText("替换模型")
+        require(condition: replacementState.text == "替换模型" && state.text == "真实任务",
+          message: "retained native control uses the replacement controller binding")
+        replacement.submit()
+        renderer.render(Input(placeholder: "替换表单", value: title))
+        tickets.values[2].reject(message: "迟到失败")
+        require(condition: !replacementController.pending() && replacementController.message() == null, message: "unmount invalidates pending submission")
         outcome.completed = true
       } catch Exception failure { outcome.failure = failure.message }
       finally { application.close() }
-    }, dispose: renderer.close)
-    require(condition: outcome.completed && outcome.failure == null,
-      message: if outcome.failure == null { "form did not complete" } else { outcome.failure!! })
+    })
+  }, dispose: renderer.close)
+  require(condition: outcome.completed && outcome.failure == null,
+    message: if outcome.failure == null { "form did not complete" } else { outcome.failure!! })
 }
 
+NativeInput formInput(Node root) {
+  List<Node> nodes = [root]
+  Integer index = 0
+  for index < nodes.size() {
+    switch nodes[index] {
+      case NativeInput input { return input }
+      case Pane pane {
+        var children = pane.getChildren()!!
+        Integer childIndex = 0
+        for childIndex < children.size() {
+          var child = children.get(childIndex)
+          if child != null { nodes.add(child) }
+          childIndex = childIndex + 1
+        }
+      }
+      case _ {}
+    }
+    index = index + 1
+  }
+  throw Exception(message: "Form did not mount a native input")
+}
+class FormTickets { List<FormSubmission> values = [] }
 @Test
 Void verifiesInputWidgetsInOneJavaFxRuntime() {
   withFxRuntime(() {

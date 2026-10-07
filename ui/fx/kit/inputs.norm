@@ -3,13 +3,8 @@ package ui.fx.kit
 import ui.CrossAlignment
 import ui.Widget
 import ui.Binding
-import ui.Column as UiColumn
-import ui.Row as UiRow
-import ui.Text as UiText
 import ui.NodeKey
-import ui.WidgetRole
 import std.io.Resource
-import std.observation.observeFields
 import ui.fx.native.TextField
 import ui.fx.kit.internal.inputPassword
 import ui.fx.kit.internal.valueLinkText
@@ -607,117 +602,5 @@ value RangeSlider implements Widget {
           }
         })
       }, close: (host) { host.value.close() }, key: key, enabled: enabled)
-  }
-}
-
-interface FormEntry extends Widget {
-  String name()
-  Boolean validate()
-  Void reset()
-}
-
-class FormFieldState<T> {
-  T initial
-  Boolean invalid = false
-
-  FormFieldState(T initial) { this.initial = initial }
-}
-
-private class FormFieldView<T> implements Widget {
-  FormFieldState<T> state
-  Widget control
-  String error
-  private Boolean invalid = false
-  private FormFieldState<T>? observed = null
-  private Resource? subscription = null
-
-  FormFieldView(FormFieldState<T> state, Widget control, String error) {
-    this.state = state
-    this.control = control
-    this.error = error
-  }
-
-  Widget build() {
-    if observed != state {
-      subscription?.close()
-      observed = state
-      invalid = state.invalid
-      subscription = observeFields<FormFieldState<T>>(target: state,
-        read: (Integer field) {}, changed: (Integer field) { invalid = state.invalid })
-    }
-    if invalid { return UiColumn(cross: CrossAlignment.Stretch, children: [control, UiText(text: error, role: WidgetRole.Destructive)], gap: 12.0) }
-    control
-  }
-
-  Void dispose() { subscription?.close() }
-}
-
-value FormField<T> implements FormEntry {
-  String name
-  FormFieldState<T> state
-  Widget control
-  Binding<T> value
-  Function<Boolean(T)> validator
-  String error
-
-  FormField(String name, FormFieldState<T> state, Widget control, Binding<T> value,
-    Function<Boolean(T)> validator, String error) {
-    this.name = name
-    this.state = state
-    this.control = control
-    this.value = value
-    this.validator = validator
-    this.error = error
-  }
-
-  String name() { name }
-  Boolean validate() {
-    state.invalid = !validator(value.value)
-    !state.invalid
-  }
-  Void reset() {
-    value.value = state.initial
-    state.invalid = false
-  }
-  Widget build() { FormFieldView<T>(state: state, control: control, error: error) }
-}
-
-value Form implements Widget {
-  List<FormEntry> fields
-  Function<Void()> onSubmit
-  String submitText
-  String resetText
-
-  Form(List<FormEntry> fields, Function<Void()> onSubmit, String submitText = "提交", String resetText = "重置") {
-    Map<String, Boolean> names = Map<>()
-    for field : fields {
-      if names.containsKey(field.name()) { throw Exception(message: "Duplicate form field: ${field.name()}") }
-      names[field.name()] = true
-    }
-    this.fields = fields
-    this.onSubmit = onSubmit
-    this.submitText = submitText
-    this.resetText = resetText
-  }
-
-  Boolean validate() {
-    var valid = true
-    for field : fields { if !field.validate() { valid = false } }
-    valid
-  }
-  Boolean submit() {
-    if !this.validate() { return false }
-    onSubmit()
-    true
-  }
-  Void reset() { for field : fields { field.reset() } }
-  Widget build() {
-    List<Widget> content = []
-    for field : fields { content.add(field) }
-    content.add(UiRow(children: [
-      Button(text: submitText, action: () { this.submit() return }),
-      Button(text: resetText, action: () { this.reset() })
-    ], gap: 10.0))
-    UiColumn(cross: CrossAlignment.Stretch, children: content, gap: 12.0)
   }
 }

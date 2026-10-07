@@ -10,7 +10,11 @@ import ui.fx.kit.Checkbox
 import ui.fx.kit.Select
 import ui.fx.kit.Form
 import ui.fx.kit.FormField
-import ui.fx.kit.FormFieldState
+import ui.fx.kit.FormController
+import ui.fx.kit.FormSubmission
+import ui.fx.kit.InputNumber
+import java.base.math.BigDecimal
+import java.base.math.bigDecimalNew
 
 class Cell<T> { T value }
 
@@ -28,36 +32,67 @@ Void inputWidgetsExposeNormBindings() {
 }
 
 @Test
-Void formValidatesSubmitsAndResetsTypedValues() {
+Void formOwnsSubmissionValidationAndBaselines() {
   var name = Cell<String>(value: "Alice")
   var submitted = Cell<Integer>(value: 0)
-  Binding<String> text = Binding<String>(read: () { name.value }, write: (String next) { name.value = next })
-  var state = FormFieldState<String>(initial: name.value)
-  var field = FormField<String>(name: "name", state: state, control: Input(placeholder: "姓名", value: text), value: text,
-    validator: (String current) { current != "" && current != "A" }, error: "姓名至少两字")
-  var form = Form(fields: [field], onSubmit: () { submitted.value = submitted.value + 1 })
-  var fieldView = field.build()
-  fieldView.build()
-  require(condition: form.validate(), message: "initial field is valid")
-  name.value = "A"
-  require(condition: !form.submit() && submitted.value == 0 && state.invalid, message: "invalid form does not submit")
-  var errorVisible = false
-  switch fieldView.build() {
-    case UiColumn column { errorVisible = true }
-    case _ {}
-  }
-  require(condition: errorVisible, message: "field view follows the stable validation model")
-  var redrawn = Form(fields: [FormField<String>(name: "name", state: state,
-    control: Input(placeholder: "更新姓名", value: text), value: text,
-    validator: (String current) { current != "" && current != "A" }, error: "姓名至少两字")],
-    onSubmit: () { submitted.value = submitted.value + 1 })
-  require(condition: state.invalid && !redrawn.validate(), message: "validation survives rebuilt field descriptions")
-  name.value = "Bob"
-  require(condition: redrawn.submit() && submitted.value == 1 && !state.invalid, message: "valid form submits once")
-  redrawn.reset()
-  require(condition: name.value == "Alice" && !state.invalid, message: "reset restores the initial typed value")
+  var text = Binding<String>(read: () { name.value }, write: (next) { name.value = next })
+  var field = FormField<String>(name: "name", value: text,
+    control: (binding) { Input(placeholder: "姓名", value: binding) },
+    validator: (current) { current != "" && current != "A" }, error: "姓名至少两字")
+  var controller = FormController(fields: [field])
+  var tickets = Tickets()
+  var form = Form(controller: controller, onSubmit: (ticket) {
+    submitted.value = submitted.value + 1
+    tickets.values.add(ticket)
+  })
+  require(condition: !controller.dirty() && !controller.pending(), message: "form starts clean and idle")
+  field.binding().value = "A"
+  require(condition: field.touched() && controller.dirty(), message: "editing tracks interaction without copying model")
+  require(condition: !form.submit() && submitted.value == 0 && field.error() == "姓名至少两字", message: "invalid data cannot submit")
+  field.binding().value = "Bob"
+  require(condition: field.error() == null, message: "editing clears stale errors")
+  require(condition: form.submit() && controller.pending(), message: "valid data opens a submission")
+  require(condition: !form.submit() && submitted.value == 1, message: "pending submission prevents duplicate callbacks")
+  Map<String, String> errors = Map<>()
+  errors["name"] = "姓名已存在"
+  tickets.values[0].reject(fieldErrors: errors, message: "保存失败")
+  require(condition: !controller.pending() && field.error() == "姓名已存在" && controller.message() == "保存失败", message: "server errors reach the field and form")
+  field.binding().value = "Carol"
+  require(condition: field.error() == null, message: "edited field clears server error")
+  form.submit()
+  field.binding().value = "Dave"
+  tickets.values[1].accept()
+  require(condition: controller.dirty(), message: "accept uses submitted snapshot and retains edits during saving")
+  controller.reset()
+  require(condition: name.value == "Carol" && !controller.dirty() && !field.touched(), message: "reset restores accepted baseline")
+  form.submit()
+  controller.cancel()
+  errors["name"] = "迟到错误"
+  tickets.values[2].reject(fieldErrors: errors)
+  require(condition: field.error() == null && !controller.pending(), message: "cancel invalidates late submission responses")
+  form.submit()
+  errors["unknown"] = "未注册字段"
+  Boolean rejected = false
+  try { tickets.values[3].reject(fieldErrors: errors) }
+  catch Exception error { rejected = error.message == "Form errors contain an unregistered field" }
+  require(condition: rejected && !controller.pending() && field.error() == null, message: "unknown server field names fail explicitly without applying partial errors")
 }
 
+class Tickets { List<FormSubmission> values = [] }
+
+@Test
+Void decimalFieldsCompareBusinessValuesWhenTrackingChanges() {
+  var amount = Cell<BigDecimal>(value: bigDecimalNew("12.00")!!)
+  var value = Binding<BigDecimal>(read: () { amount.value }, write: (next) { amount.value = next })
+  var field = FormField<BigDecimal>(name: "amount", value: value,
+    control: (binding) { InputNumber(value: binding, scale: 2) },
+    validator: (current) { true }, error: "",
+    equivalent: (left, right) { left.compareTo(right) == 0 })
+  field.binding().value = bigDecimalNew("12.0")!!
+  require(condition: !field.dirty(), message: "equal monetary values remain clean despite different JDK objects and scale")
+  field.binding().value = bigDecimalNew("13.00")!!
+  require(condition: field.dirty(), message: "different monetary value marks the field dirty")
+}
 @Test
 Void selectKeepsTypedOptionsAndSelection() {
   var chosen = Cell<String?>(value: null)
@@ -71,10 +106,10 @@ Void selectKeepsTypedOptionsAndSelection() {
 Void formRejectsDuplicateFieldNames() {
   var name = Cell<String>(value: "Ada")
   var text = Binding<String>(read: () { name.value }, write: (next) { name.value = next })
-  var field = FormField<String>(name: "name", state: FormFieldState<String>(initial: name.value),
-    control: Input(placeholder: "Name", value: text), value: text, validator: (current) { true }, error: "")
+  var field = FormField<String>(name: "name", value: text,
+    control: (binding) { Input(placeholder: "Name", value: binding) }, validator: (current) { true }, error: "")
   var rejected = false
-  try { Form(fields: [field, field], onSubmit: () {}) }
+  try { FormController(fields: [field, field]) }
   catch Exception error { rejected = error.message == "Duplicate form field: name" }
   require(condition: rejected, message: "duplicate field names fail before rendering")
 }

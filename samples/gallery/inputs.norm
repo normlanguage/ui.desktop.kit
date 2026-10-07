@@ -18,7 +18,7 @@ import ui.fx.kit.DateRangePicker
 import ui.fx.kit.DateRange
 import ui.fx.kit.Form
 import ui.fx.kit.FormField
-import ui.fx.kit.FormFieldState
+import ui.fx.kit.FormController
 import ui.fx.kit.InputNumber
 import ui.fx.kit.Mentions
 import ui.fx.kit.Radio
@@ -148,26 +148,30 @@ class FormExample implements Widget {
   String title = ""
   String owner = ""
   Integer submitted = 0
-  private FormFieldState<String> titleState = FormFieldState<String>(initial: "")
-  private FormFieldState<String> ownerState = FormFieldState<String>(initial: "")
+  private FormController? form = null
+
+  Void init() {
+    var titleValue = Binding<String>(read: () { title }, write: (next) { title = next })
+    var ownerValue = Binding<String>(read: () { owner }, write: (next) { owner = next })
+    form = FormController(fields: [
+      FormField<String>(name: "标题", value: titleValue,
+        control: (binding) { Input(placeholder: "任务标题", value: binding) },
+        validator: (next) { next != "" }, error: "请输入标题"),
+      FormField<String>(name: "负责人", value: ownerValue,
+        control: (binding) { Input(placeholder: "负责人", value: binding) },
+        validator: (next) { next != "" }, error: "请输入负责人")
+    ])
+  }
 
   Widget build() {
-    var titleValue = Binding<String>(read: () { title }, write: (String next) { title = next })
-    var ownerValue = Binding<String>(read: () { owner }, write: (String next) { owner = next })
     Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("创建任务")
-      Form(fields: [
-        FormField<String>(name: "标题", state: titleState, control: Input(placeholder: "任务标题", value: titleValue),
-          value: titleValue, validator: (String next) { next != "" }, error: "请输入标题"),
-        FormField<String>(name: "负责人", state: ownerState, control: Input(placeholder: "负责人", value: ownerValue),
-          value: ownerValue, validator: (String next) { next != "" }, error: "请输入负责人")
-      ], onSubmit: () { submitted = submitted + 1 })
+      Form(controller: form!!, onSubmit: (submission) { submitted = submitted + 1 submission.accept() })
       Text("已提交 " + submitted.toString() + " 次")
       Text(if submitted == 0 { "填写两项后提交" } else { "最近任务：" + title + " · " + owner })
     }
   }
 }
-
 class InputNumberExample implements Widget {
   BigDecimal budget = bigDecimalNew("1280.50")!!
 
