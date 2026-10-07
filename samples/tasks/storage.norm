@@ -1,0 +1,31 @@
+package tasks
+
+import std.filesystem.Path
+import std.filesystem.readText
+import std.filesystem.writeTextAtomic
+import std.filesystem.FileException
+import std.filesystem.FileFailure
+import std.io.TextEncoding
+import std.json.fromJson
+import std.json.toJson
+import std.serialization.Serializable
+
+@Serializable()
+value TaskItem { Integer id String title Boolean completed = false }
+
+@Serializable()
+value TaskSnapshot { Integer nextId = 1 List<TaskItem> items = [] }
+
+value TaskStore {
+  Path file
+  TaskSnapshot load() {
+    try { return readText(path: file, encoding: TextEncoding.Utf8, maximumBytes: 1048576).fromJson<TaskSnapshot>() }
+    catch FileException error {
+      if error.reason == FileFailure.NotFound { return TaskSnapshot() }
+      throw error
+    }
+  }
+  Void save(TaskSnapshot snapshot) {
+    writeTextAtomic(path: file, text: snapshot.toJson(), encoding: TextEncoding.Utf8)
+  }
+}
