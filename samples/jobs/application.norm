@@ -1,0 +1,220 @@
+package jobs
+
+import ui.Widget
+import ui.ViewScope
+import ui.Binding
+import ui.ValueKey
+import ui.Column
+import ui.Row
+import ui.Box
+import ui.Insets
+import ui.SizeConstraints
+import ui.Dimension
+import ui.CrossAlignment
+import ui.Text
+import ui.ThemeProvider
+import ui.UiProvider
+import ui.UiConfiguration
+import ui.fx.DesktopApp
+import ui.fx.CloseRequest
+import ui.fx.kit.Button
+import ui.fx.kit.Input
+import ui.fx.kit.Select
+import ui.fx.kit.Listy
+import ui.fx.kit.ProgressValue
+import ui.fx.kit.Progress
+import ui.fx.kit.Tag
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.theme.Appearance
+import ui.theme.Tone
+import std.context.currentContext
+import std.concurrent.Task
+import std.filesystem.Path
+import std.core.Exception
+
+enum JobStatus { Queued, Running, Completed, Cancelled, Failed }
+
+value FileJob {
+  Integer id
+  Path source
+  Path directory
+  Integer total
+  Integer attempt = 0
+  JobStatus status = JobStatus.Queued
+  Integer written = 0
+  String detail = "等待开始"
+}
+
+value RunKey { Integer id Integer attempt }
+
+value JobLog { Integer id String message Boolean error = false }
+
+class Jobs implements Widget {
+  ThemeManager theme
+  String source = "samples/jobs/data/source.txt"
+  String directory = "build/jobs/output"
+  private List<FileJob> jobs = []
+  private List<JobLog> logs = []
+  private Map<RunKey, Task<ExportResult>> tasks = Map<>()
+  private ViewScope? scope = null
+  private Integer nextId = 1
+  private Integer nextLogId = 1
+  private String? logFilter = "全部日志"
+  private Boolean dark = false
+  private CloseRequest? closeRequest = null
+
+  Void init() { scope = currentContext<ViewScope>()!! this.add() }
+
+  Void dispose() { tasks = Map<>() scope = null }
+
+  List<FileJob> currentJobs() { jobs }
+  List<JobLog> currentLogs() { logs }
+
+  Void add() {
+    var id = nextId
+    nextId = nextId + 1
+    jobs = [...jobs, FileJob(id: id, source: Path(source), directory: Path(directory + "/job-" + id.toString()), total: 200)]
+    this.log("任务 " + id.toString() + " 已加入队列")
+  }
+
+  Void log(String message, Boolean error = false) {
+    logs = [...logs, JobLog(id: nextLogId, message: message, error: error)]
+    nextLogId = nextLogId + 1
+  }
+
+  Void publish(FileJob job, JobStatus status, Integer written, String detail) {
+    jobs = [for (current : jobs) if current.id == job.id && current.attempt == job.attempt {
+      FileJob(id: job.id, source: job.source, directory: job.directory, total: job.total,
+        attempt: job.attempt, status: status, written: written, detail: detail)
+    } else { current }]
+  }
+
+  Void start(FileJob job) {
+    if job.status == JobStatus.Running || job.status == JobStatus.Completed { return }
+    if [for (current : jobs) if (current.id == job.id && current.attempt != job.attempt) current].size() != 0 { return }
+    var active = FileJob(id: job.id, source: job.source, directory: job.directory, total: job.total,
+      attempt: job.attempt + 1, status: JobStatus.Running, detail: "正在原子写入文件")
+    jobs = [for (current : jobs) if current.id == job.id { active } else { current }]
+    var run = RunKey(id: active.id, attempt: active.attempt)
+    this.log("任务 " + job.id.toString() + " 开始导出")
+    var owner = scope!!
+    var operation = owner.start<ExportResult>(() {
+      exportFiles(source: active.source, directory: active.directory, count: active.total,
+        progress: (Integer written) {
+          owner.dispatch(() {
+            for current : jobs {
+              if current.id == active.id && current.attempt == active.attempt && current.status == JobStatus.Running {
+                this.publish(job: active, status: JobStatus.Running, written: written, detail: "已提交 " + written.toString() + " 个文件")
+              }
+            }
+          })
+        })
+    })
+    tasks.put(key: run, value: operation)
+    operation.then((ExportResult result) {
+      for current : jobs {
+        if current.id == active.id && current.attempt == active.attempt && current.status == JobStatus.Running {
+          this.publish(job: active, status: JobStatus.Completed, written: result.written, detail: active.directory.value)
+          this.log("任务 " + active.id.toString() + " 完成：" + result.written.toString() + " 个文件")
+        }
+      }
+      tasks.remove(run)
+    }).error((Exception failure) {
+      for current : jobs {
+        if current.id == active.id && current.attempt == active.attempt && current.status != JobStatus.Cancelled {
+          this.publish(job: active, status: JobStatus.Failed, written: current.written, detail: failure.message)
+          this.log("任务 " + job.id.toString() + " 失败：" + failure.message, error: true)
+        }
+      }
+      tasks.remove(run)
+    })
+  }
+
+  Void cancel(FileJob job) {
+    var run = RunKey(id: job.id, attempt: job.attempt)
+    if !tasks.containsKey(run) { return }
+    var operation = tasks[run]
+    if operation.cancel() {
+      this.publish(job: job, status: JobStatus.Cancelled, written: job.written, detail: "已停止；已提交文件保留")
+      this.log("任务 " + job.id.toString() + " 已取消")
+    }
+  }
+
+  Void confirmClose(CloseRequest request) {
+    if [for (job : jobs) if (job.status == JobStatus.Running) job].size() == 0 { request.accept() }
+    else { closeRequest = request }
+  }
+
+  Widget build() {
+    UiProvider(configuration: UiConfiguration(fontSize: 15.0), child:
+      ThemeProvider(source: theme, child:
+        Box(padding: Insets(top: 24.0, right: 24.0, bottom: 24.0, left: 24.0), content:
+          Column(gap: 16.0, cross: CrossAlignment.Stretch) {
+            Row(gap: 16.0) {
+              Text("文件任务工作台")
+              Button(text: if dark { "浅色主题" } else { "深色主题" }, appearance: Appearance.Soft, action: () {
+                dark = !dark
+                theme.setMode(if dark { ThemeMode.Dark } else { ThemeMode.Light })
+              })
+            }
+            Text("从一个源文件导出 200 个副本，已完成文件可直接在输出目录查看。")
+            Input(placeholder: "源文件路径", value: Binding<String>(read: () { source }, write: (String next) { source = next }))
+            Input(placeholder: "输出目录", value: Binding<String>(read: () { directory }, write: (String next) { directory = next }))
+            Row(gap: 12.0) {
+              Button(text: "添加任务", enabled: source.trim() != "" && directory.trim() != "", action: this.add)
+              Text(jobs.size().toString() + " 个任务")
+            }
+            Box(size: SizeConstraints(height: Dimension.Fixed(230.0)), content:
+              Listy<FileJob>(items: jobs, identity: (FileJob job) { ValueKey<Integer>(job.id) }, rowHeight: 76.0,
+                row: (FileJob job) { JobRow(job: job, start: () { this.start(job) }, cancel: () { this.cancel(job) }) }))
+            Select<String>(options: ["全部日志", "错误日志"], value: Binding<String?>(read: () { logFilter }, write: (String? next) { logFilter = next }))
+            Box(size: SizeConstraints(height: Dimension.Fixed(180.0)), content:
+              Listy<JobLog>(items: [for (entry : logs) if (logFilter != "错误日志" || entry.error) entry],
+                identity: (JobLog entry) { ValueKey<Integer>(entry.id) }, rowHeight: 32.0,
+                row: (JobLog entry) { Text(entry.message) }))
+            if closeRequest != null {
+              Row(gap: 12.0) {
+                Text("仍有文件任务运行，退出将取消任务。")
+                Button(text: "继续处理", appearance: Appearance.Soft, action: () { closeRequest?.cancel() closeRequest = null })
+                Button(text: "取消任务并退出", tone: Tone.Danger, action: () { closeRequest?.accept() })
+              }
+            }
+          })))
+  }
+}
+
+value JobRow implements Widget {
+  FileJob job
+  Function<Void()> start
+  Function<Void()> cancel
+  Widget build() {
+    Column(gap: 4.0, cross: CrossAlignment.Stretch) {
+      Row(gap: 12.0) {
+        Text("任务 " + job.id.toString())
+        Tag(text: switch job.status {
+          case Queued { break "等待开始" }
+          case Running { break "处理中" }
+          case Completed { break "已完成" }
+          case Cancelled { break "已取消" }
+          case Failed { break "失败" }
+        })
+        Text(job.written.toString() + "/" + job.total.toString())
+        if job.status == JobStatus.Running { Button(text: "取消", appearance: Appearance.Soft, action: cancel) }
+        else if job.status != JobStatus.Completed { Button(text: if job.status == JobStatus.Queued { "开始" } else { "重试" }, action: start) }
+      }
+      Progress(value: ProgressValue.Work(completed: job.written, total: job.total))
+      Text(job.detail)
+    }
+  }
+}
+
+main() {
+  var theme = ThemeManager(definition: ThemeDefinition(primary: Color(hex: "#1677FF")))
+  var home = Jobs(theme: theme)
+  try { DesktopApp(title: "文件任务工作台", home: home, width: 960.0, height: 840.0, onCloseRequested: home.confirmClose).run() }
+  finally { theme.close() }
+}
+

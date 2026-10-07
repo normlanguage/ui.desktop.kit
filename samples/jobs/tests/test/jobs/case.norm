@@ -1,0 +1,91 @@
+package jobs.test.jobs
+
+import ui.fx.withFxRuntime
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
+import jobs.Jobs
+import jobs.JobStatus
+import ui.fx.FxApplication
+import ui.Renderer
+import ui.fx.JavaFxBackend
+import ui.fx.JavaFxScheduler
+import std.observation.observeFields
+import ui.fx.fxHandle
+import std.testing.Test
+import std.filesystem.Path
+import std.filesystem.writeTextAtomic
+import std.filesystem.readText
+import std.io.TextEncoding
+import jobs.exportFiles
+import jobs.ExportResult
+import std.concurrent.startTask
+import std.concurrent.completion
+import std.concurrent.awaitCancellation
+import std.core.Exception
+
+@Test
+Void exportsRealFilesAndReportsCommittedProgress() {
+  var source = Path("build/jobs-test/source.txt")
+  writeTextAtomic(path: source, text: "Norm UI file export", encoding: TextEncoding.Utf8)
+  var result = exportFiles(source: source, directory: Path("build/jobs-test/export"), count: 3,
+    progress: (Integer written) {})
+  require(condition: result.written == 3, message: "all requested files are committed")
+  var actual = readText(path: Path("build/jobs-test/export/part-3.txt"), encoding: TextEncoding.Utf8, maximumBytes: 1048576)
+  require(condition: actual == "Norm UI file export", message: "export preserves the source content")
+}
+
+
+@Test
+Void cancellationStopsAfterACommittedFileAndTerminatesTheWorker() {
+  var source = Path("build/jobs-test/cancel-source.txt")
+  writeTextAtomic(path: source, text: "Committed before cancellation", encoding: TextEncoding.Utf8)
+  var first = completion<Integer>()
+  var operation = startTask<ExportResult>(() {
+    exportFiles(source: source, directory: Path("build/jobs-test/cancel"), count: 100,
+      progress: (Integer written) { first.succeed(written) awaitCancellation() throw Exception(message: "export cancelled") })
+  })
+  try {
+    require(condition: first.task().await() == 1, message: "the worker commits a real file before cancellation")
+    require(condition: operation.cancel(), message: "active scoped work accepts cancellation")
+    var failed = false
+    try { operation.await() } catch Exception error { failed = true }
+    require(condition: failed, message: "cancelled work cannot report a successful export")
+    operation.termination()?.await()
+    require(condition: readText(path: Path("build/jobs-test/cancel/part-1.txt"), encoding: TextEncoding.Utf8, maximumBytes: 1048576) == "Committed before cancellation",
+      message: "cancellation preserves the committed output")
+  } finally { operation.close() first.close() }
+}
+
+
+@Test
+Void completesARealExportFromTheJavaFxApplication() {
+  withFxRuntime(() {
+    var source = Path("build/jobs-test/ui-source.txt")
+    writeTextAtomic(path: source, text: "Exported by the UI", encoding: TextEncoding.Utf8)
+    var theme = ThemeManager(definition: ThemeDefinition(primary: Color(hex: "#1677FF")))
+    var home = Jobs(theme: theme, source: source.value, directory: "build/jobs-test/ui-output")
+    var application = FxApplication("File task acceptance", width: 960.0, height: 840.0)
+    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+    var completed = completion<Boolean>()
+    var subscription = observeFields<Jobs>(target: home, read: (Integer field) {}, changed: (Integer field) {
+      var rows = home.currentJobs()
+      if rows.size() != 0 && (rows[0].status == JobStatus.Completed || rows[0].status == JobStatus.Failed) {
+        completed.succeed(rows[0].status == JobStatus.Completed)
+        application.later(() { application.close() })
+      }
+    })
+    try {
+      application.run(build: () {
+        renderer.render(home)
+        application.root(fxHandle(renderer.node()))
+        application.later(() { var job = home.currentJobs()[0] home.start(job) home.start(job) })
+      }, dispose: renderer.close)
+      require(condition: completed.task().completed() && completed.task().await(), message: "the UI receives the successful background export")
+      require(condition: home.currentJobs()[0].attempt == 1 && home.currentLogs().size() == 3, message: "repeated start does not create duplicate work or log entries")
+      require(condition: home.currentJobs()[0].written == 200, message: "progress reaches the committed file count")
+      require(condition: readText(path: Path("build/jobs-test/ui-output/job-1/part-200.txt"), encoding: TextEncoding.Utf8, maximumBytes: 1048576) == "Exported by the UI",
+        message: "the UI task writes real output accessible after the window closes")
+    } finally { subscription.close() completed.close() theme.close() }
+  })
+}

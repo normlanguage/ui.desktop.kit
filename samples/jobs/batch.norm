@@ -1,0 +1,21 @@
+package jobs
+
+import std.filesystem.Path
+import std.filesystem.readText
+import std.filesystem.writeTextAtomic
+import std.io.TextEncoding
+
+value ExportResult { Integer written }
+
+ExportResult exportFiles(Path source, Path directory, Integer count, Function<Void(Integer)> progress) {
+  require(condition: count > 0 && count <= 10000, message: "file count must be between 1 and 10000")
+  var text = readText(path: source, encoding: TextEncoding.Utf8, maximumBytes: 1048576)
+  var written = 0
+  for written < count {
+    var next = written + 1
+    writeTextAtomic(path: Path(directory.value + "/part-" + next.toString() + ".txt"), text: text, encoding: TextEncoding.Utf8)
+    written = next
+    progress(written)
+  }
+  ExportResult(written)
+}
