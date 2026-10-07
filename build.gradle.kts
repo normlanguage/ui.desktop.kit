@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.normlanguage"
-version = "2"
+version = "3"
 
 repositories { mavenCentral() }
 
@@ -42,7 +42,7 @@ val gallery = sourceSets.create("gallery") {
 sourceSets.test { compileClasspath += gallery.output; runtimeClasspath += gallery.output }
 val galleryJar = tasks.register<Jar>("galleryJar") {
     archiveBaseName.set("ui-fx-gallery")
-    archiveVersion.set("1")
+    archiveVersion.set("2")
     includeEmptyDirs = false
     from(gallery.output)
     from("samples/gallery") { include("**/*.norm"); exclude("tests/**", "module.norm"); into("norm-source/samples/gallery") }
@@ -87,7 +87,7 @@ publishing {
         create<MavenPublication>("library") { from(components["java"]) }
         create<MavenPublication>("gallery") {
             artifactId = "ui-fx-gallery"
-            version = "1"
+            version = "2"
             artifact(galleryJar)
             pom.withXml {
                 val dependency = asNode().appendNode("dependencies").appendNode("dependency")

@@ -13,6 +13,7 @@ import ui.fx.kit.internal.Tabs as TabsControl
 import ui.fx.native.ScrollPane
 import ui.fx.native.TextArea as TextAreaControl
 import ui.View
+import ui.RenderNode
 import ui.NativeView
 import ui.Widget
 import ui.ViewContent
@@ -29,12 +30,12 @@ Void tabPagesHaveOneScrollingOwner() {
   var outer = Tabs(tabs: [Tab(title: "Settings", content: inner, scroll: false)], selected: selected)
   switch describe(outer.build()).content {
     case Native(NativeView parent) {
-      switch parent.children()[0].content {
+      switch parent.children(DescriptorNode())[0].content {
         case WidgetObject(Widget widget) {
           switch widget { case Tabs child {
           switch describe(child.build()).content {
             case Native(NativeView nested) {
-              switch nested.children()[0].content {
+              switch nested.children(DescriptorNode())[0].content {
                 case Native(NativeView scrolling) { require(condition: scrolling.kind() == "ui.scroll", message: "The inner tab uses the layout scrolling protocol") }
                 case _ { require(condition: false, message: "The inner tab owns scrolling") }
               }
@@ -128,4 +129,10 @@ Void nativeTabsRetainEditingBuffersAndScrollOwners() {
     require(condition: state.completed && state.failure == null,
       message: if state.failure == null { "Native tabs verification did not complete" } else { state.failure!! })
   })
+}
+
+class DescriptorNode implements RenderNode {
+  Void update(View view) {}
+  Void children(List<RenderNode> children) {}
+  Void close() {}
 }

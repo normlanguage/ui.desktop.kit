@@ -5,7 +5,16 @@ import ui.NodeKey
 import ui.theme.Tone
 import ui.theme.Appearance
 import ui.fx.kit.internal.styleSurface
+import ui.State
+import ui.ItemKey
+import std.context.currentContext
+import ui.ViewScope
+import ui.ForEach
 import ui.Binding
+import ui.View
+import ui.describe
+import ui.fx.kit.internal.TableCellSlot
+import ui.fx.kit.internal.tableColumnSpecNew
 import java.base.util.JavaList
 import java.base.time.LocalDate
 import java.base.time.YearMonth
@@ -292,10 +301,13 @@ value ListView<T> implements Widget {
 private class ListyHost<T> {
   ListyControl<T?> control
   SelectionLink<T?> selected
+  State<List<T>> visible
 }
 
 value Listy<T> implements Widget {
   List<T> items
+  Function<ItemKey(T)> identity
+  Function<Widget(T)> row
   Double rowHeight = 32.0
   Binding<T?>? selected = null
   NodeKey? key = null
@@ -304,9 +316,12 @@ value Listy<T> implements Widget {
     nativeComponent<ListyHost<T>>(kind: "ui.fx.kit.Listy",
       create: () {
         var control = listyNew<T?>()
-        ListyHost<T>(control: control, selected: displayAdapterSelected(control)!!)
+        ListyHost<T>(control: control, selected: displayAdapterSelected(control)!!,
+          visible: currentContext<ViewScope>()!!.createState<List<T>>([]))
       }, node: (host) { host.control },
       update: (host, scope) {
+        var visible = host.visible
+        host.control.rows(scope.bind<JavaList<T?>?>((JavaList<T?>? next) { visible.value = selectionItems(next) }))
         host.control.setRowHeight(rowHeight)
         displayAdapterItems(arg0: host.control, arg1: hostNullableItems(items))
         var selection = selected
@@ -314,7 +329,9 @@ value Listy<T> implements Widget {
           var changed = scope.bind((T? next) { selection.value = next })
           host.selected.update(arg0: selection.value, arg1: changed)
         } else { host.selected.unbind() }
-      }, close: (host) { host.selected.close() utilCloseNode(host.control) }, key: key)
+      }, childrenBuilder: (host) { ForEach<T>(items: host.visible.value, identity: identity, child: row).widgets() },
+      arrange: (host, nodes) { host.control.rowNodes(hostItems(nodes)) },
+      close: (host) { host.selected.close() host.control.close() utilCloseNode(host.control) }, key: key)
   }
 }
 
@@ -369,23 +386,30 @@ value Statistic implements Widget {
 }
 
 value TableColumn<T> {
+  String id
   String heading
-  Function<String(T)> display
+  Function<String(T)> display = (T row) { "" }
+  Function<Integer(T, T)>? compare = null
+  Function<Widget(T)>? cell = null
 }
 
 value TableSort {
-  String heading
+  String columnId
   Boolean descending = false
 }
+
+private value TableCellIdentity implements ItemKey { String columnId ItemKey row }
 
 private class TableHost<T> {
   TableControl<T?> control
   SelectionLink<T?> selected
   TableSortLink<T?> sorting
+  State<List<TableCellSlot<T?>>> slots
 }
 
 value Table<T> implements Widget {
   List<T> rows
+  Function<ItemKey(T)> identity
   List<TableColumn<T>> columns
   Binding<T?>? selected = null
   Binding<TableSort?>? sort = null
@@ -396,29 +420,71 @@ value Table<T> implements Widget {
       create: () {
         var control = tableNew<T?>()
         TableHost<T>(control: control, selected: displayAdapterTableSelected(control)!!,
-          sorting: tableSortLinkNew<T?>(control))
+          sorting: tableSortLinkNew<T?>(control),
+          slots: currentContext<ViewScope>()!!.createState<List<TableCellSlot<T?>>>([]))
       }, node: (host) { host.control },
       update: (host, scope) {
-        displayAdapterRows(arg0: host.control, arg1: hostNullableItems(rows))
-        host.sorting.columns(arg0: hostItems([for (column : columns) column.heading]),
-          arg1: (T? item) { hostItems([for (column : columns) column.display(item!!)]) })
         var selection = selected
+        T? requestedSelection = null
         if selection != null {
+          var currentSelection = selection.value
+          if currentSelection != null {
+            var rowIdentity = identity(currentSelection)
+            for row : rows {
+              if identity(row) == rowIdentity { requestedSelection = row break }
+            }
+          }
+        }
+        host.selected.unbind()
+        displayAdapterRows(arg0: host.control, arg1: hostNullableItems(rows))
+        var visible = host.slots
+        host.control.cellSlots(scope.bind<JavaList<TableCellSlot<T?>>?>((JavaList<TableCellSlot<T?>>? next) {
+          List<TableCellSlot<T?>> items = []
+          if next != null {
+            var iterator = next.iterator()!!
+            for iterator.hasNext() { items.add(iterator.next()!!) }
+          }
+          visible.value = items
+        }))
+        host.sorting.columns(hostItems([for (column : columns)
+          tableColumnSpecNew<T?>(arg0: column.id, arg1: column.heading,
+            arg2: (T? row) { column.display(row!!) },
+            arg3: if column.compare == null { null } else { (T? left, T? right) { column.compare!!(left!!, right!!) } },
+            arg4: column.cell != null)]))
+        if selection != null {
+          if selection.value != requestedSelection { selection.value = requestedSelection }
           var changed = scope.bind((T? next) { selection.value = next })
-          host.selected.update(arg0: selection.value, arg1: changed)
+          host.selected.update(arg0: requestedSelection, arg1: changed)
         } else { host.selected.unbind() }
         var order = sort
         if order != null {
           var requested = order.value
           host.sorting.update(arg0: if requested == null { null } else {
-              tableSortStateNew(arg0: requested.heading, arg1: requested.descending)
+              tableSortStateNew(arg0: requested.columnId, arg1: requested.descending)
             }, arg1: scope.bind((NativeTableSort? next) {
               order.value = if next == null { null } else {
-                TableSort(heading: next.heading()!!, descending: next.descending())
+                TableSort(columnId: next.columnId()!!, descending: next.descending())
               }
             }))
         } else { host.sorting.unbind() }
-      }, close: (host) { host.selected.close() host.sorting.close() utilCloseNode(host.control) }, key: key)
+      }, childrenBuilder: (host) {
+        List<Widget> widgets = []
+        var visible = host.slots
+          for slot : visible.value {
+            for column : columns {
+              if column.id == slot.columnId()!! {
+                var factory = column.cell
+                if factory != null {
+                  var view = describe(factory(slot.row()!!))
+                  widgets.add(View(key: NodeKey.Item(TableCellIdentity(columnId: slot.columnId()!!, row: identity(slot.row()!!))),
+                    content: view.content, role: view.role, enabled: view.enabled, reference: view.reference))
+                }
+              }
+            }
+          }
+        widgets
+      }, arrange: (host, nodes) { host.control.cellNodes(hostItems(nodes)) },
+      close: (host) { host.selected.close() host.sorting.close() host.control.close() }, key: key)
   }
 }
 

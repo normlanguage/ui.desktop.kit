@@ -1,9 +1,9 @@
 Module module() {
-  module(name: "ui.fx.kit", version: 6,
-    exports: ["general", "inputs", "layout", "navigation", "display", "feedback", "configuration", "status", "notices", "component_bridge"],
-    dependencies: [dependency(repository: "github", name: "ui", version: 8), dependency(repository: "github", name: "ui.fx", version: 6), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "ui.theme", version: 3)],
+  module(name: "ui.fx.kit", version: 7,
+    exports: ["general", "inputs", "form", "layout", "navigation", "display", "feedback", "configuration", "status", "notices", "component_bridge"],
+    dependencies: [dependency(repository: "github", name: "ui", version: 9), dependency(repository: "github", name: "ui.fx", version: 7), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "ui.theme", version: 3)],
     binding: jarBinding(
-      target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-kit", version: "2", resolution: sha256("d85ae14c2793576e9113dd908400c171abf793b0cc1eb41fb9d10a3df149d694")),
+      target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-kit", version: "3", resolution: sha256("c581789aaddf383abed4650ed735d7009c6bc2f53a5bc15a2e8569cac5347fa0")),
       api: [
         jarType(name: "dev.normlanguage.ui.component.KitEnvironment", alias: "internal.KitEnvironment", members: ["apply", "clear"]),
         jarType(name: "dev.normlanguage.ui.component.Upload.Item", alias: "internal.UploadItem", members: ["getFile", "getStatus", "getProgress", "statusProperty", "progressProperty"]),
@@ -58,11 +58,11 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.Empty", alias: "internal.Empty", members: ["new", "setDescription"]),
         jarType(name: "dev.normlanguage.ui.component.Image", alias: "internal.Image", members: ["new", "getSource", "setSource", "setPreviewable", "showPreview"]),
         jarType(name: "dev.normlanguage.ui.component.List", alias: "internal.ListView", members: ["new", "getItems", "getSelectionModel"]),
-        jarType(name: "dev.normlanguage.ui.component.Listy", alias: "internal.Listy", members: ["new", "getItems", "getSelectionModel", "setRowHeight"]),
+        jarType(name: "dev.normlanguage.ui.component.Listy", alias: "internal.Listy", members: ["new", "getItems", "getSelectionModel", "setRowHeight", "rows", "rowNodes", "close"]),
         jarType(name: "dev.normlanguage.ui.component.QRCode", alias: "internal.QRCode", members: ["new", "getText", "setText", "setSize"]),
         jarType(name: "dev.normlanguage.ui.component.Segmented", alias: "internal.Segmented", members: ["new", "getItems", "getValue", "setValue"]),
         jarType(name: "dev.normlanguage.ui.component.Statistic", alias: "internal.Statistic", members: ["new", "getValue", "setValue", "close"]),
-        jarType(name: "dev.normlanguage.ui.component.Table", alias: "internal.Table", members: ["new", "setSource", "setPredicate", "column", "observableColumn", "editableColumn", "getItems", "getColumns", "getSource"]),
+        jarType(name: "dev.normlanguage.ui.component.Table", alias: "internal.Table", members: ["new", "setSource", "setPredicate", "column", "observableColumn", "editableColumn", "getItems", "getColumns", "getSource", "cellSlots", "cellNodes", "close"]),
         jarType(name: "dev.normlanguage.ui.component.Tag", alias: "internal.Tag", members: ["new", "setText", "getText", "setClosable"]),
         jarType(name: "dev.normlanguage.ui.component.Timeline", alias: "internal.Timeline", members: ["new", "add"]),
         jarType(name: "dev.normlanguage.ui.component.Tooltip", alias: "internal.Tooltip", members: ["new", "show", "hide", "isShowing", "close"]),
@@ -71,7 +71,7 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.Alert", alias: "internal.Alert", members: ["new", "dismiss", "setClosable", "setTitle", "setContent"]),
         jarType(name: "dev.normlanguage.ui.component.Drawer", alias: "internal.Drawer", members: ["new", "show", "hide", "close", "isShowing"]),
         jarType(name: "dev.normlanguage.ui.component.Popconfirm", alias: "internal.Popconfirm", members: ["new", "show", "hide", "close"]),
-        jarType(name: "dev.normlanguage.ui.component.Progress", alias: "internal.Progress", members: ["new", "getProgress", "setProgress"]),
+        jarType(name: "dev.normlanguage.ui.component.Progress", alias: "internal.Progress", members: ["new", "getProgress", "setProgress", "setFraction", "setWork"]),
         jarType(name: "dev.normlanguage.ui.component.Result", alias: "internal.Result", members: ["new", "setTitle", "setDescription", "setActions"]),
         jarType(name: "dev.normlanguage.ui.component.Skeleton", alias: "internal.Skeleton", members: ["new", "setLines"]),
         jarType(name: "dev.normlanguage.ui.component.Spin", alias: "internal.Spin", members: ["new", "setSpinning", "isSpinning", "setContent"]),
@@ -106,7 +106,9 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.FeedbackAdapter.AffixHost", alias: "internal.AffixHost", members: ["content", "close"]),
         jarType(name: "dev.normlanguage.ui.component.NoticeHost", alias: "internal.NoticeHost", members: ["message", "notification", "content", "update", "dismiss", "close"]),
         jarType(name: "dev.normlanguage.ui.component.InputAdapter.Progress", alias: "internal.InputAdapterProgress", members: ["report"]),
-        jarType(name: "dev.normlanguage.ui.component.TableSortState", alias: "internal.TableSortState", members: ["new", "heading", "descending"]),
+        jarType(name: "dev.normlanguage.ui.component.TableColumnSpec", alias: "internal.TableColumnSpec", members: ["new"]),
+        jarType(name: "dev.normlanguage.ui.component.TableCellSlot", alias: "internal.TableCellSlot", members: ["columnId", "index", "row"]),
+        jarType(name: "dev.normlanguage.ui.component.TableSortState", alias: "internal.TableSortState", members: ["new", "columnId", "descending"]),
         jarType(name: "dev.normlanguage.ui.component.TableSortLink", alias: "internal.TableSortLink", members: ["new", "columns", "update", "unbind", "close"]),
         jarType(name: "dev.normlanguage.ui.component.TreeCheckLink", alias: "internal.TreeCheckLink", members: ["new", "update", "unbind", "close"])
       ]))
