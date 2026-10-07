@@ -98,10 +98,15 @@ public final class DisplayAdapter {
             column.setCellValueFactory(cell -> new javafx.beans.property.ReadOnlyObjectWrapper<>(cell.getValue()));
             column.setSortable(specification.comparator() != null);
             if (specification.comparator() != null) column.setComparator(specification.comparator());
-            column.setCellFactory(ignored -> specification.widget() ? control.widgetCell(specification.id()) : new javafx.scene.control.TableCell<>() {
+            var previousSpec = column.getProperties().put(TableColumnSpec.class, specification);
+            var stableColumn = column;
+            if (!(previousSpec instanceof TableColumnSpec<?> old) || old.widget() != specification.widget())
+                column.setCellFactory(ignored -> specification.widget() ? control.widgetCell(specification.id()) : new javafx.scene.control.TableCell<>() {
                 @Override protected void updateItem(T row, boolean empty) {
                     super.updateItem(row, empty);
-                    setText(empty || row == null ? null : specification.display().apply(row));
+                    @SuppressWarnings("unchecked")
+                    var latest = (TableColumnSpec<T>) stableColumn.getProperties().get(TableColumnSpec.class);
+                    setText(empty || row == null ? null : latest.display().apply(row));
                     setGraphic(null);
                 }
             });
