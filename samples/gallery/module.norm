@@ -1,10 +1,10 @@
 Module module() {
   module(name: "gallery", version: 2,
     exports: ["application", "catalog", "general", "layout", "navigation", "inputs", "display", "overlays", "status", "surface"],
-    dependencies: [dependency(repository: "github", name: "ui.fx", version: 6), dependency(repository: "github", name: "ui.fx.kit", version: 6),
-      dependency(repository: "github", name: "ui", version: 8),
+    dependencies: [dependency(repository: "github", name: "ui.fx", version: 7), dependency(repository: "github", name: "ui.fx.kit", version: 7),
+      dependency(repository: "github", name: "ui", version: 9),
       dependency(repository: "github", name: "ui.theme", version: 3),
       dependency(repository: "norm", name: "java.base", version: 1)],
-    binding: jarBinding(target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-gallery", version: "1", resolution: sha256("3bc5d305ca1baa5028b548e2d7cca4b35de707c7ea7144d28da5320016f4f9af")),
+    binding: jarBinding(target: mavenJar(group: "dev.normlanguage", artifact: "ui-fx-gallery", version: "2", resolution: sha256("04c653d9dc9f790265eb23032e4dd31a5f3a52a6084a83bb22c9035d1c492b0a")),
       api: [jarType(name: "dev.normlanguage.ui.gallery.GallerySupport", alias: "internal.GallerySupport", members: ["capture", "requireButton", "resourceText"])]))
 }

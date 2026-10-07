@@ -1,5 +1,7 @@
 # ui 与 ui.fx.kit 使用指南
 
+完整软件、表格身份、表单提交和关闭生命周期见[应用开发与能力验收](applications.md)。
+
 `ui` 提供 Widget、布局、基础元素、主题上下文、状态观察、Binding 和子树协调；`ui.fx.kit` 提供页面控件。桌面窗口、调度和 JavaFX 渲染由 `ui.fx` 实现。应用通常从 `ui.fx.kit` 组合页面，只有自定义原生节点时才需要了解底层投影协议。
 
 构建工具链与源码依赖准备见 [README](../README.md)。依赖版本的唯一来源是 [示例模块声明](../samples/guide/module.norm)与 [kit 模块声明](../ui/fx/kit/module.norm)，这里不维护第二份版本表。
@@ -12,12 +14,12 @@
 
 ```powershell
 $env:NORM_EXECUTABLE = '你的匹配版 Norm CLI 路径/norm.bat'
-./scripts/prepare.ps1
+./scripts/prepare.ps1 -UiRoot <ui-source>
 ./scripts/norm.ps1 check samples/guide
 ./scripts/norm.ps1 run samples/guide/application.norm
 ```
 
-`prepare.ps1` 在本仓库的隔离开发目录打包依赖并准备 Java 制品；`norm.ps1` 使用同一开发目录。因此准备和运行应走同一组脚本。已完整发布后，外部应用可依据模块声明直接解析包，不需要复制组件实现。脚本定义见 [prepare.ps1](../scripts/prepare.ps1)与 [norm.ps1](../scripts/norm.ps1)。
+`prepare.ps1` 在本仓库的隔离开发目录准备 Java 制品并校验固定依赖；`norm.ps1` 使用同一开发目录。因此准备和运行应走同一组脚本。已完整发布后，外部应用可依据模块声明直接解析包，不需要复制组件实现。脚本定义见 [prepare.ps1](../scripts/prepare.ps1 -UiRoot <ui-source>)与 [norm.ps1](../scripts/norm.ps1)。
 
 ## Widget 与局部状态
 

@@ -16,6 +16,7 @@ import ui.fx.kit.Button
 import ui.fx.kit.Alert
 import ui.fx.kit.Message
 import ui.fx.kit.Notification
+import ui.fx.kit.ProgressValue
 import ui.fx.kit.Progress
 import ui.fx.kit.Result
 import ui.fx.kit.Skeleton
@@ -61,13 +62,14 @@ class NotificationExample implements Widget {
 }
 
 class ProgressExample implements Widget {
-  private Double progress = 0.35
+  private Integer completed = 35
+  private Boolean waiting = false
   Widget build() {
     Column(cross: CrossAlignment.Stretch, gap: 12.0) {
-      Progress(value: progress)
+      Progress(value: if waiting { ProgressValue.Indeterminate } else { ProgressValue.Work(completed: completed, total: 100) })
       Row(gap: 10.0) {
-        Button(text: "推进", action: () { progress = if progress >= 1.0 { 0.0 } else { progress + 0.1 } })
-        Button(text: "等待中", action: () { progress = -1.0 })
+        Button(text: "推进", action: () { waiting = false completed = if completed >= 100 { 0 } else if completed >= 90 { 100 } else { completed + 10 } })
+        Button(text: "等待中", action: () { waiting = true })
       }
     }
   }
