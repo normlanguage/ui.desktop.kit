@@ -43,10 +43,18 @@ sourceSets.test { compileClasspath += gallery.output; runtimeClasspath += galler
 val galleryJar = tasks.register<Jar>("galleryJar") {
     archiveBaseName.set("ui-fx-gallery")
     archiveVersion.set("1")
+    includeEmptyDirs = false
     from(gallery.output)
     from("samples/gallery") { include("**/*.norm"); exclude("tests/**", "module.norm"); into("norm-source/samples/gallery") }
     from("ui/fx/kit") { include("**/*.norm"); exclude("module.norm"); exclude("tests/**"); into("norm-source/ui/fx/kit") }
-    from(providers.gradleProperty("uiRoot").orElse("../ui").map { "$it/ui" }) { include("layouts.norm", "elements.norm"); into("norm-source/ui") }
+    val uiRoot = providers.gradleProperty("uiRoot").orElse("")
+    doFirst {
+        require(uiRoot.get().isNotBlank()) { "galleryJar requires -PuiRoot=<ui source repository>" }
+        for (source in listOf("layouts.norm", "elements.norm")) {
+            require(file("${uiRoot.get()}/ui/$source").isFile) { "Missing gallery source: ${uiRoot.get()}/ui/$source" }
+        }
+    }
+    from(uiRoot.map { "$it/ui" }) { include("layouts.norm", "elements.norm"); into("norm-source/ui") }
 }
 tasks.withType<Jar>().configureEach { from("LICENSE") { into("META-INF") } }
 val generateThemeFixtures = tasks.register<Exec>("generateThemeFixtures") {

@@ -1,10 +1,11 @@
 param(
+    [string]$UiRoot,
     [string]$NormHome = (Join-Path (Split-Path $PSScriptRoot -Parent) '.norm-home'),
     [string]$ModulePath = 'ui/fx/kit'
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-& (Join-Path $PSScriptRoot 'build.ps1') -NormHome $NormHome
+& (Join-Path $PSScriptRoot 'build.ps1') -NormHome $NormHome -UiRoot $UiRoot
 $module = Join-Path $root ($ModulePath + '/module.norm')
 $source = [IO.File]::ReadAllText($module)
 $source = [regex]::Replace($source, ', resolution: sha256\("[a-f0-9]+"\)', '')

@@ -1,10 +1,11 @@
 param(
+    [string]$UiRoot,
     [switch]$Verify,
     [string]$NormHome = (Join-Path (Split-Path $PSScriptRoot -Parent) '.norm-home')
 )
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot -Parent
-& (Join-Path $PSScriptRoot 'prepare.ps1') -NormHome $NormHome
+& (Join-Path $PSScriptRoot 'prepare.ps1') -NormHome $NormHome -UiRoot $UiRoot
 $previous = $env:JAVA_TOOL_OPTIONS
 Push-Location $root
 try {

@@ -20,7 +20,9 @@ The [gallery](samples/gallery/application.norm) and its [catalog](samples/galler
 
 ## Build and verify
 
-Run `./scripts/prepare.ps1` to build the artifacts and verify the pinned component digest and module. Run `./scripts/update-pin.ps1` intentionally after changing Java artifacts. Verification does not rewrite descriptors. Use an explicit `-NormHome` containing source-built dependencies for integration work; regular descriptors remain released dependency declarations.
+Run `./scripts/prepare.ps1 -UiRoot <ui-source>` to build the artifacts and verify the pinned component digest and module. Run `./scripts/update-pin.ps1 -UiRoot <ui-source>` intentionally after changing Java artifacts. Verification does not rewrite descriptors. Use an explicit `-NormHome` containing source-built dependencies for integration work; regular descriptors remain released dependency declarations.
+
+Gallery documentation embeds the public UI source from an explicit `-UiRoot` input. Use the `ui@8` release source for published artifact verification. Missing source files fail the build.
 
 [build.gradle.kts](build.gradle.kts) owns Java dependencies, reproducible archives and tests. Java tests generate theme fixtures through [the fixture entry point](samples/fixtures/application.norm), using the canonical `ui.fx.themeCss`. The default test task includes theme rendering contracts. `-PskipThemeFixtures` is available for focused tests that do not use CSS fixtures.
 
