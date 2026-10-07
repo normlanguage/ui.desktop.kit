@@ -2,8 +2,8 @@ package ui.kit.test.display
 
 import std.testing.Test
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column as Vertical
+import ui.Text
+import ui.Column as Vertical
 import ui.Binding
 import ui.Renderer
 import ui.fx.JavaFxBackend
@@ -11,8 +11,8 @@ import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
-import jdk.base.LocalDate
-import jdk.base.localDateOf
+import java.base.time.LocalDate
+import java.base.time.localDateOf
 import ui.kit.Avatar
 import ui.kit.Badge
 import ui.kit.Calendar
@@ -60,7 +60,7 @@ Widget preview(Cell<LocalDate?> date, Cell<Boolean> expanded, Cell<String?> sele
     Tag(text: "已发布", closable: true),
     Timeline(entries: [TimelineEntry(time: "09:30", content: Text("创建项目"))]),
     Tree<String>(root: "根", children: (String item) { if item == "根" { ["分支"] } else { [] } }, selected: selection)
-  ])
+  ], gap: 12.0)
 }
 
 @Test

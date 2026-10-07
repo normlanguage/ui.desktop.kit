@@ -1,15 +1,17 @@
 package ui.kit.test.navigation
 
+import ui.Row
 import std.testing.Test
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column
+import ui.Text
+import ui.Column
 import ui.NodeKey
 import ui.Binding
 import ui.Renderer
 import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.fxHandle
+import ui.fx.LayoutPane
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
 import ui.kit.Button as ComponentButton
@@ -17,14 +19,13 @@ import ui.kit.FloatButton
 import ui.kit.Icon
 import ui.kit.Typography
 import ui.kit.Divider
-import ui.kit.Flex
-import ui.kit.FlexItem
-import ui.kit.Grid
-import ui.kit.GridItem
-import ui.kit.GridBreakpoint
-import ui.kit.Layout
-import ui.kit.Masonry
-import ui.kit.Space
+import ui.Flex
+import ui.FlexItem
+import ui.Grid
+import ui.GridItem
+import ui.GridBreakpoint
+import ui.Dock
+import ui.Masonry
 import ui.kit.Splitter
 import ui.kit.Anchor
 import ui.kit.AnchorSection
@@ -52,18 +53,18 @@ Widget preview(State state, String title) {
   Binding<Integer> page = Binding<Integer>(read: () { state.page }, write: (Integer next) { state.page = next })
   Binding<Integer> step = Binding<Integer>(read: () { state.step }, write: (Integer next) { state.step = next })
   Binding<Integer> tab = Binding<Integer>(read: () { state.tab }, write: (Integer next) { state.tab = next })
-  Column([
+  Column(gap: 12.0, children: [
     ComponentButton(text: title, action: () { state.clicked = state.clicked + 1 }),
     FloatButton(text: "+", content: Text("画布"), action: () { state.clicked = state.clicked + 1 }),
     Icon(literal: "mdi2s-star"),
     Typography(text: "标题", copyable: true),
     Divider(),
-    Flex(items: [FlexItem(content: Text("左"), grow: 1.0), FlexItem(content: Text("右"))]),
+    Flex(items: [FlexItem(content: Text("左"), grow: 1.0), FlexItem(content: Text("右"))], gap: 8.0),
     Grid(items: [GridItem(content: Text("第一项")), GridItem(content: Text("第二项"))],
-      breakpoints: [GridBreakpoint(minimumWidth: 300.0, columns: 2)]),
-    Layout(top: Text("页眉"), center: Text("正文"), bottom: Text("页脚")),
-    Masonry(children: [Text("短"), Text("稍长内容")]),
-    Space(children: [Text("操作一"), Text("操作二")]),
+      breakpoints: [GridBreakpoint(minimumWidth: 300.0, columns: 2)], gap: 8.0),
+    Dock(top: Text("页眉"), center: Text("正文"), bottom: Text("页脚")),
+    Masonry(children: [Text("短"), Text("稍长内容")], gap: 8.0),
+    Row(children: [Text("操作一"), Text("操作二")], gap: 8.0),
     Splitter(children: [Text("目录"), Text("内容")]),
     Anchor(sections: [AnchorSection(title: "简介", content: Text("简介内容")),
       AnchorSection(title: "用法", content: Text("用法内容"))]),
@@ -86,13 +87,12 @@ Void mountsAllGeneralLayoutAndNavigationWidgetsInJavaFx() {
     var state = State()
     application.run(build: () {
       try {
-        require(condition: application.column().nativeNode().getStyleClass()!!.contains("norm-column")
-          && application.row().nativeNode().getStyleClass()!!.contains("norm-row")
-          && application.component().nativeNode().getStyleClass()!!.contains("norm-component")
-          && application.scroll().nativeNode().getStyleClass()!!.contains("norm-scroll"),
-          message: "layout nodes expose stable theme style classes")
         renderer.render(preview(state, title: "开始"))
         application.root(fxHandle(renderer.node()))
+        switch fxHandle(renderer.node()).nativeNode() {
+          case LayoutPane pane { require(condition: !pane.getChildren()!!.isEmpty(), message: "ui layout protocol renders the component page") }
+          case _ { require(condition: false, message: "component page uses the shared layout backend") }
+        }
         state.page = 2
         state.step = 1
         state.tab = 1

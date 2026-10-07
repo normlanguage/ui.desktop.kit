@@ -1,5 +1,6 @@
 package guide
 
+import ui.CrossAlignment
 import ui.Widget
 import ui.Binding
 import ui.ForEach
@@ -8,10 +9,11 @@ import ui.NodeKey
 import ui.fx.DesktopApp
 import ui.kit.App
 import ui.kit.ConfigProvider
-import ui.kit.configuration
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Text
+import ui.UiConfiguration
+import ui.UiProvider
+import ui.Column
+import ui.Row
+import ui.Text
 import ui.kit.Input
 import ui.kit.Button
 import ui.kit.Tabs
@@ -42,8 +44,8 @@ class Notes implements Widget {
   Widget build() {
     App(theme: theme, content: Tabs(selected: Binding<Integer>(
       read: () { selected }, write: (Integer next) { selected = next }), tabs: [
-      Tab(title: "笔记", key: NodeKey.Named("notes"), content: Column {
-        Row {
+      Tab(title: "笔记", key: NodeKey.Named("notes"), content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
+        Row(gap: 10.0) {
           Input(placeholder: "输入笔记", value: Binding<String>(
             read: () { draft }, write: (String next) { draft = next }), submit: this.save)
           Button(text: "保存", action: this.save, enabled: !draft.isBlank)
@@ -51,8 +53,8 @@ class Notes implements Widget {
         ForEach<String>(items: notes, identity: (String note) { ValueKey<String>(note) },
           child: (String note) { Text(note) })
       }),
-      Tab(title: "设置", key: NodeKey.Named("settings"), content: ConfigProvider(
-        config: configuration(fontSize: 16.0), content: Column {
+      Tab(title: "设置", key: NodeKey.Named("settings"), content: UiProvider(
+        configuration: UiConfiguration(fontSize: 16.0), child: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           Text("局部字号与全局主题")
           Button(text: if dark { "浅色" } else { "深色" }, tone: Tone.Neutral,
             appearance: Appearance.Soft, action: () {

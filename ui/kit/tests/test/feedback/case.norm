@@ -2,8 +2,8 @@ package ui.kit.test.feedback
 
 import std.testing.Test
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column
+import ui.Text
+import ui.Column
 import ui.Binding
 import ui.Renderer
 import ui.fx.JavaFxBackend
@@ -23,7 +23,7 @@ class State { Boolean open = false Boolean completed = false Boolean closed = fa
 
 Widget preview(State state) {
   Binding<Boolean> open = Binding<Boolean>(read: () { state.open }, write: (Boolean next) { state.open = next })
-  Column([
+  Column(gap: 12.0, children: [
     Modal(title: "确认", anchor: Text("打开对话框"), content: Text("详细信息"), open: open),
     Drawer(anchor: Text("打开抽屉"), content: Text("侧边内容"), open: open),
     Popover(anchor: Text("打开气泡卡片"), content: Text("卡片内容"), open: open),

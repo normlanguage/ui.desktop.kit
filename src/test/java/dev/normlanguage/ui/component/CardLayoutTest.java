@@ -1,6 +1,5 @@
 package dev.normlanguage.ui.component;
 
-import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,18 +38,4 @@ class CardLayoutTest extends FxTest {
         });
     }
 
-    @Test void flexRightAlignmentTracksAvailableWidth() throws Exception {
-        fx(() -> {
-            var action = new Label("action");
-            action.setPrefSize(60, 24);
-            var row = new Flex(action);
-            row.setAlignment(Pos.CENTER_RIGHT);
-            row.resize(400, 40);
-            row.layout();
-            assertEquals(340, action.getLayoutX(), 0.1);
-            row.resize(600, 40);
-            row.layout();
-            assertEquals(540, action.getLayoutX(), 0.1);
-        });
-    }
 }

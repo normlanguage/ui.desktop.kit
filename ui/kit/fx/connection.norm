@@ -1,5 +1,8 @@
 package ui.kit.fx
 
+import ui.fx.themeCss
+import ui.fx.toneName
+import ui.fx.appearanceName
 import theme.Theme
 import theme.ThemeSource
 import theme.Tone
@@ -8,9 +11,10 @@ import theme.ControlState
 import fx.graphics.Node
 import std.io.Resource
 import std.filesystem.Path
+import java.base.io.fileNew
 
 Void uploadFiles(Upload upload, List<Path> files) {
-  for file : files { upload.addFile(file) }
+  for file : files { upload.addFile(fileNew(file.value)!!) }
 }
 
 App app(ThemeSource theme, Node content) {
@@ -56,58 +60,6 @@ Void styleButton(Button control, Tone tone = Tone.Primary, Appearance appearance
   control.setStyle(css)
 }
 
-private String toneName(Tone tone) {
-  switch tone {
-    case Neutral { break "neutral" }
-    case Primary { break "primary" }
-    case Secondary { break "secondary" }
-    case Success { break "success" }
-    case Warning { break "warning" }
-    case Danger { break "danger" }
-    case Info { break "info" }
-  }
-}
-
-private String appearanceName(Appearance appearance) {
-  switch appearance {
-    case Filled { break "filled" }
-    case Soft { break "soft" }
-    case Outlined { break "outlined" }
-    case Plain { break "plain" }
-  }
-}
-
-String themeCss(Theme theme) {
-  var css = "-norm-canvas: " + theme.canvas.background.hex() + ";"
-  css = css + "-norm-text: " + theme.canvas.foreground.hex() + ";"
-  css = css + "-norm-surface: " + theme.surface.background.hex() + ";"
-  css = css + "-norm-surface-raised: " + theme.surfaceRaised.background.hex() + ";"
-  css = css + "-norm-divider: " + theme.divider.hex() + ";"
-  css = css + "-norm-muted: " + theme.textMuted.hex() + ";"
-  css = css + "-norm-outline: " + theme.outline.hex() + ";"
-  css = css + "-norm-focus: " + theme.control(tone: Tone.Primary).focusRing.hex() + ";"
-  css = css + "-norm-scrim: " + theme.scrim.hex() + ";"
-  var tones = [Tone.Neutral, Tone.Primary, Tone.Secondary, Tone.Success, Tone.Warning, Tone.Danger, Tone.Info]
-  var appearances = [Appearance.Filled, Appearance.Soft, Appearance.Outlined, Appearance.Plain]
-  for tone : tones {
-    for appearance : appearances {
-      for selected : [false, true] {
-      var palette = theme.control(tone, appearance, selected)
-      var prefix = "-norm-" + toneName(tone) + "-" + appearanceName(appearance)
-      if selected { prefix = prefix + "-selected" }
-      css = css + stateCss(prefix: prefix + "-normal", state: palette.normal)
-      css = css + stateCss(prefix: prefix + "-hovered", state: palette.hovered)
-      css = css + stateCss(prefix: prefix + "-pressed", state: palette.pressed)
-      css = css + stateCss(prefix: prefix + "-disabled", state: palette.disabled)
-      }
-    }
-  }
-  css
-}
-
-private String stateCss(String prefix, ControlState state) {
-  prefix + "-background: " + state.background.hex() + ";" + prefix + "-foreground: " + state.foreground.hex() + ";" + prefix + "-border: " + state.border.hex() + ";"
-}
 
 Void styleSurface(Node control, Tone tone = Tone.Neutral, Appearance appearance = Appearance.Soft) {
   var prefix = "-norm-" + toneName(tone) + "-" + appearanceName(appearance)

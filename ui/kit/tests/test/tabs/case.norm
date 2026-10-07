@@ -19,8 +19,8 @@ import ui.ViewContent
 import ui.describe
 import ui.kit.Tab
 import ui.kit.Tabs
-import ui.kit.Text
-import ui.kit.TextArea
+import ui.Text
+import ui.TextArea
 
 @Test
 Void tabPagesHaveOneScrollingOwner() {
@@ -35,7 +35,7 @@ Void tabPagesHaveOneScrollingOwner() {
           switch describe(child.build()).content {
             case Native(NativeView nested) {
               switch nested.children()[0].content {
-                case Scroll(_) {}
+                case Native(NativeView scrolling) { require(condition: scrolling.kind() == "ui.scroll", message: "The inner tab uses the layout scrolling protocol") }
                 case _ { require(condition: false, message: "The inner tab owns scrolling") }
               }
             }

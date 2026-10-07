@@ -6,9 +6,9 @@ import theme.Tone
 import theme.Appearance
 import ui.kit.fx.styleSurface
 import ui.Binding
-import std.collections.MutableList
-import jdk.base.LocalDate
-import jdk.base.YearMonth
+import java.base.util.JavaList
+import java.base.time.LocalDate
+import java.base.time.YearMonth
 import ui.kit.fx.Avatar as AvatarControl
 import ui.kit.fx.Badge as BadgeControl
 import ui.kit.fx.Calendar as CalendarControl
@@ -75,6 +75,8 @@ import ui.kit.fx.displayAdapterTimeline
 import ui.kit.fx.displayAdapterTreeChildren
 import ui.kit.fx.displayAdapterTreeSelected
 import ui.kit.fx.hostItems
+import ui.kit.fx.hostNullableItems
+import ui.kit.fx.selectionItems
 import ui.kit.fx.utilCloseNode
 
 value Avatar implements Widget {
@@ -108,8 +110,8 @@ value Badge implements Widget {
 
 private class CalendarHost {
   CalendarControl control
-  ValueLink<LocalDate?> selected
-  ValueLink<YearMonth?> month
+  ValueLink<LocalDate> selected
+  ValueLink<YearMonth> month
 }
 
 value Calendar implements Widget {
@@ -190,7 +192,7 @@ value Carousel implements Widget {
 
 private class CollapseHost {
   CollapseControl control
-  ValueLink<Boolean?> expanded
+  ValueLink<Boolean> expanded
 }
 
 value Collapse implements Widget {
@@ -277,7 +279,7 @@ value ListView<T> implements Widget {
         ListHost<T>(control: control, selected: displayAdapterSelected(control)!!)
       }, node: (host) { host.control },
       update: (host, scope) {
-        displayAdapterItems(arg0: host.control, arg1: hostItems(items))
+        displayAdapterItems(arg0: host.control, arg1: hostNullableItems(items))
         var selection = selected
         if selection != null {
           var changed = scope.bind((T? next) { selection.value = next })
@@ -306,7 +308,7 @@ value Listy<T> implements Widget {
       }, node: (host) { host.control },
       update: (host, scope) {
         host.control.setRowHeight(rowHeight)
-        displayAdapterItems(arg0: host.control, arg1: hostItems(items))
+        displayAdapterItems(arg0: host.control, arg1: hostNullableItems(items))
         var selection = selected
         if selection != null {
           var changed = scope.bind((T? next) { selection.value = next })
@@ -346,7 +348,7 @@ value Segmented<T> implements Widget {
         SegmentedHost<T>(control: control, selected: displayAdapterSegmentedValue(control)!!)
       }, node: (host) { host.control },
       update: (host, scope) {
-        displayAdapterSegmentedItems(arg0: host.control, arg1: hostItems(items))
+        displayAdapterSegmentedItems(arg0: host.control, arg1: hostNullableItems(items))
         var changed = scope.bind((T? next) { selected.value = next })
         host.selected.update(arg0: selected.value, arg1: changed)
       }, close: (host) { host.selected.close() utilCloseNode(host.control) }, key: key)
@@ -397,7 +399,7 @@ value Table<T> implements Widget {
           sorting: tableSortLinkNew<T?>(control))
       }, node: (host) { host.control },
       update: (host, scope) {
-        displayAdapterRows(arg0: host.control, arg1: hostItems(rows))
+        displayAdapterRows(arg0: host.control, arg1: hostNullableItems(rows))
         host.sorting.columns(arg0: hostItems([for (column : columns) column.heading]),
           arg1: (T? item) { hostItems([for (column : columns) column.display(item!!)]) })
         var selection = selected
@@ -482,7 +484,7 @@ value Tree<T> implements Widget {
           checked: treeCheckLinkNew<T?>(control))
       }, node: (host) { host.control },
       update: (host, scope) {
-        displayAdapterTreeChildren(arg0: host.control, arg1: (T? value) { hostItems(children(value!!)) })
+        displayAdapterTreeChildren(arg0: host.control, arg1: (T? value) { hostNullableItems(children(value!!)) })
         host.control.setCheckable(checkable)
         var selection = selected
         if selection != null {
@@ -491,10 +493,10 @@ value Tree<T> implements Widget {
         } else { host.selected.unbind() }
         var checks = checked
         if checks != null {
-          var changed = scope.bind((MutableList<T?>? next) {
-            checks.value = [for (item : next!!) item!!]
+          var changed = scope.bind<JavaList<T?>?>((JavaList<T?>? next) {
+            checks.value = selectionItems(next)
           })
-          host.checked.update(arg0: hostItems(checks.value), arg1: changed)
+          host.checked.update(arg0: hostNullableItems(checks.value), arg1: changed)
         } else { host.checked.unbind() }
       }, close: (host) { host.selected.close() host.checked.close() utilCloseNode(host.control) }, key: key)
   }

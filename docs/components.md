@@ -4,9 +4,9 @@
 
 | 领域 | Norm Widget | 交互示例 |
 | --- | --- | --- |
-| 基础描述 | [primitives.norm](../ui/kit/primitives.norm) | [基本示例](../samples/gallery/general.norm) |
+| 基础元素 | [ui 元素](https://github.com/normlanguage/ui/blob/main/ui/elements.norm) | [基本示例](../samples/gallery/general.norm) |
 | 通用 | [general.norm](../ui/kit/general.norm) | [general.norm](../samples/gallery/general.norm) |
-| 布局 | [layout.norm](../ui/kit/layout.norm) | [layout.norm](../samples/gallery/layout.norm) |
+| 分隔控件 | [layout.norm](../ui/kit/layout.norm) | [layout.norm](../samples/gallery/layout.norm) |
 | 导航 | [navigation.norm](../ui/kit/navigation.norm) | [navigation.norm](../samples/gallery/navigation.norm) |
 | 数据录入 | [inputs.norm](../ui/kit/inputs.norm) | [inputs.norm](../samples/gallery/inputs.norm) |
 | 数据展示 | [display.norm](../ui/kit/display.norm) | [display.norm](../samples/gallery/display.norm) |
@@ -16,4 +16,4 @@
 
 [Norm 组件测试](../ui/kit/tests)覆盖 Widget 入口，[JavaFX 定向测试](../src/test/java/dev/normlanguage/ui/component)覆盖原生控件与投影桥。原生控件需要直接嵌入 JavaFX 应用时，以对应 Java 类为入口；Norm 应用直接使用本表的 Widget。
 
-布局对齐与卡片标题区域的原生验证：[CardLayoutTest](../src/test/java/dev/normlanguage/ui/component/CardLayoutTest.java)。语义颜色参数复用 [`theme`](https://github.com/normlanguage/theme)，组件映射以 [connection.norm](../ui/kit/fx/connection.norm) 为准。
+卡片标题区域的原生验证：[CardLayoutTest](../src/test/java/dev/normlanguage/ui/component/CardLayoutTest.java)。语义颜色参数复用 [`theme`](https://github.com/normlanguage/theme)，组件映射以 [connection.norm](../ui/kit/fx/connection.norm) 为准。

@@ -1,6 +1,6 @@
 # ui 与 ui.kit 使用指南
 
-`ui` 提供 Widget、状态观察、Binding 和子树协调；`ui.kit` 提供页面控件与布局。桌面窗口、调度和 JavaFX 渲染由 `ui.fx` 实现。应用通常从 `ui.kit` 组合页面，只有自定义原生节点时才需要了解底层投影协议。
+`ui` 提供 Widget、布局、基础元素、主题上下文、状态观察、Binding 和子树协调；`ui.kit` 提供页面控件。桌面窗口、调度和 JavaFX 渲染由 `ui.fx` 实现。应用通常从 `ui.kit` 组合页面，只有自定义原生节点时才需要了解底层投影协议。
 
 当前 kit 使用 JavaFX 后端。这组新模块与所有权能力尚未全部发布；请先使用匹配的开发版 Norm 和已合并的依赖源码，不要假定旧版编译器或现有 Release 可以运行下面的示例。依赖版本的唯一来源是 [示例模块声明](../samples/guide/module.norm)与 [kit 模块声明](../ui/kit/module.norm)，这里不维护第二份版本表。
 
@@ -21,7 +21,7 @@ $env:NORM_EXECUTABLE = '你的匹配版 Norm CLI 路径/norm.bat'
 
 ## Widget 与局部状态
 
-实现 `ui.Widget` 的对象通过 `build()` 返回另一个 Widget。`Column`、`Row`、控件和自定义 Widget 都能参与组合；构建器内可使用条件、循环和 `ForEach`。协议定义见 [widget.norm](https://github.com/normlanguage/ui/blob/main/ui/widget.norm)，布局构造入口见 [primitives.norm](../ui/kit/primitives.norm)。
+实现 `ui.Widget` 的对象通过 `build()` 返回另一个 Widget。`Column`、`Row`、控件和自定义 Widget 都能参与组合；构建器内可使用条件、循环和 `ForEach`。协议定义见 [widget.norm](https://github.com/normlanguage/ui/blob/main/ui/widget.norm)，布局构造入口见 [ui 布局](https://github.com/normlanguage/ui/blob/main/ui/layouts.norm)。
 
 笔记应用把 `draft`、`notes`、`selected` 和 `dark` 保存为 `Notes` 的普通字段。渲染器观察构建期间读取的 class Widget 字段（value Widget 用作值描述）；事件修改字段后，调度器协调界面。没有额外的 `setState` API。需要保留页面局部状态时，保留同一个页面对象；对持有页面状态的对象，直接复用同一个实例最容易表达其生命周期。同类型同 key 的新 class Widget 描述会把公开字段同步到挂载对象，私有局部字段则由挂载对象保留；不要把重新传入的公开字段误当成永不覆盖的局部状态，具体语义见 [对象协调测试](https://github.com/normlanguage/ui/blob/main/ui/tests/test/objects/case.norm)。
 
@@ -33,7 +33,7 @@ $env:NORM_EXECUTABLE = '你的匹配版 Norm CLI 路径/norm.bat'
 
 示例复用 `save` 方法作为 `Input.submit` 和 `Button.action`：回车和按钮走同一个写入口。按钮的 `enabled` 来自当前状态。控件已经接入挂载作用域的回调管理，普通应用无需额外注册原生 JavaFX 监听器。准确参数与默认值见 [Input](../ui/kit/inputs.norm)和 [Button](../ui/kit/general.norm)。
 
-需要多行输入时使用 [TextArea](../ui/kit/primitives.norm)，敏感文本输入可使用 `Input(password: true)`。只读、禁用和不可编辑是不同行为，应按各控件公开参数表达。
+需要多行输入时使用 [TextArea](https://github.com/normlanguage/ui/blob/main/ui/elements.norm)，敏感文本输入可使用 `Input(password: true)`。只读、禁用和不可编辑是不同行为，应按各控件公开参数表达。
 
 ## 列表身份与 Tabs
 
@@ -49,15 +49,15 @@ Tab 默认包裹滚动容器，并保留页面节点。页面本身负责滚动�
 
 [ThemeManager](https://github.com/normlanguage/theme)生成并发布主题；`App(theme: ..., content: ...)`把主题接入控件树并提供组件样式。示例的设置页调用 `setMode` 切换主题，不需要遍历控件设置颜色。
 
-`ConfigProvider` 为一个子树设置局部配置或主题。示例仅改变字号，未指定 `theme`，因此沿用外层主题。`configuration(...)` 是组件配置的公开构造入口；`Button` 的 `Tone` 与 `Appearance` 使用 `theme` 的同一套语义类型。具体字段、样式参数和继承逻辑以 [configuration.norm](../ui/kit/configuration.norm)与 [主题连接](../ui/kit/fx/connection.norm)为准。
+`ui.UiProvider` 为子树提供通用字体、方向和动效配置，设置页示例使用 `UiConfiguration(fontSize: 16.0)`。`ui.kit.ConfigProvider` 提供控件专属的 `KitConfiguration`，定义见 [configuration.norm](../ui/kit/configuration.norm)。`Button` 的 `Tone` 与 `Appearance` 使用 `theme` 的同一套语义类型。主题及通用配置继承入口见 [`ui`](https://github.com/normlanguage/ui/blob/main/ui/configuration.norm)。
 
-`App` / `ConfigProvider` 订阅主题，不接管调用方共享的 `ThemeManager`。创建主题的应用负责在窗口和渲染树清理之后关闭它。多个页面共享同一个主题时，不要让其中一个页面的 `dispose()` 关闭全局主题。
+`ui.ThemeProvider` 管理主题订阅，`App` / `ConfigProvider` 组合这一协议，不接管调用方共享的 `ThemeManager`。创建主题的应用负责在窗口和渲染树清理之后关闭它。多个页面共享同一个主题时，不要让其中一个页面的 `dispose()` 关闭全局主题。
 
 ## 生命周期与原生扩展
 
 普通页面使用 Widget 控件即可。窗口入口管理 Renderer；组件卸载时由渲染树释放其节点、绑定、回调与组件资源。手动使用 Renderer 的扩展应为整个渲染过程提供明确的 `close()` 出口，不要只关闭窗口而留下渲染树。
 
-需要扩展原生控件时，先读 [架构与生命周期](architecture.md)、[native.norm](../ui/kit/native.norm)以及 [`ui` 原生视图协议](https://github.com/normlanguage/ui/blob/main/ui/native.norm)。组件创建在 ViewScope 内执行；匹配的 Norm 工具链把 owned 宿主资源接入当前资源所有者，避免同一资源被多个别名重复登记。
+需要扩展原生控件时，先读 [架构与生命周期](architecture.md)、[`ui.fx` 原生组件桥](https://github.com/normlanguage/ui-fx/blob/main/ui/fx/native.norm)以及 [`ui` 原生视图协议](https://github.com/normlanguage/ui/blob/main/ui/native.norm)。组件创建在 ViewScope 内执行；匹配的 Norm 工具链把 owned 宿主资源接入当前资源所有者，避免同一资源被多个别名重复登记。
 
 借用返回值通过 [ui.kit.fx 的 borrowed 声明](../ui/kit/fx/module.norm)标注，例如宿主的 `node()`。调用方可以使用借用节点，但不能把它当成独立拥有的资源关闭，也不能让它逃逸并在宿主释放后继续使用。新绑定应根据实际所有权声明 borrowed，不要因返回类型是 Node 就推断所有权。此机制需要支持该契约的编译器；旧工具链不能作为等价替代。
 

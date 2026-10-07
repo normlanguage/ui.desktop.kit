@@ -1,11 +1,15 @@
 package gallery
 
+import ui.CrossAlignment
+import ui.Box
+import ui.SizeConstraints
+import ui.Dimension
 import ui.Widget
 import ui.fx.DesktopApp
-import ui.kit.Text
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Scroll
+import ui.Text
+import ui.Column
+import ui.Row
+import ui.Scroll
 import ui.WidgetRole
 import ui.Binding
 import theme.ThemeManager
@@ -14,11 +18,12 @@ import theme.ThemeMode
 import theme.Color
 import theme.Tone
 import theme.Appearance
-import ui.kit.configuration
+import ui.UiConfiguration
+import ui.UiProvider
 import ui.kit.App
 import ui.kit.Button
 import ui.kit.Input
-import ui.kit.Layout
+import ui.Dock
 import ui.kit.Surface
 import ui.kit.Typography
 import ui.kit.resourceText
@@ -59,17 +64,17 @@ class Gallery implements Widget {
   Widget build() {
     var selected = selection.page
     var example = selection.example
-    App(theme: theme, config: configuration(fontFamily: "Microsoft YaHei UI", motionEnabled: motion), stylesheet: "/dev/normlanguage/ui/component/gallery/norm-gallery.css", content:
-      Layout(top: Surface(styleClass: "gallery-header", content: Row {
+    UiProvider(configuration: UiConfiguration(fontFamily: "Microsoft YaHei UI", motionEnabled: motion), child: App(theme: theme, stylesheet: "/dev/normlanguage/ui/component/gallery/norm-gallery.css", content:
+      Dock(top: Surface(styleClass: "gallery-header", content: Row(gap: 10.0) {
         Text(text: "NORM", role: WidgetRole.Title)
         Text(text: "Components", role: WidgetRole.Muted)
         Button(text: if motion { "动画：开" } else { "动画：关" }, tone: Tone.Neutral, appearance: Appearance.Plain,
           action: () { motion = !motion })
         Button(text: if dark { "浅色" } else { "深色" }, tone: Tone.Neutral, appearance: Appearance.Plain,
           action: () { dark = !dark theme.setMode(if dark { ThemeMode.Dark } else { ThemeMode.Light }) })
-      }), left: Surface(styleClass: "gallery-sidebar", content: Column {
+      }), left: Surface(styleClass: "gallery-sidebar", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
         Input(value: Binding<String>(read: () { query }, write: (String next) { query = next }), placeholder: "搜索组件")
-        Scroll(child: Column {
+        Scroll(child: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
           for category : ["通用", "布局", "导航", "数据录入", "数据展示", "反馈", "其他"] {
             Text(text: category, role: WidgetRole.Muted)
             for page : pages {
@@ -82,15 +87,15 @@ class Gallery implements Widget {
             }
           }
         })
-      }), center: Scroll(child: Surface(styleClass: "gallery-document", content: Column {
+      }), center: Scroll(child: Surface(styleClass: "gallery-document", content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
         Text(text: selected.category + " / " + selected.name, role: WidgetRole.Muted)
         Text(text: selected.name + "  " + selected.chinese, role: WidgetRole.Title)
         Typography(text: selected.summary)
         Text(text: "何时使用", role: WidgetRole.Title)
         Typography(text: selected.whenToUse)
         Text(text: "交互示例", role: WidgetRole.Title)
-        Surface(styleClass: "gallery-preview", minimumHeight: 180.0, content: example)
-        Row {
+        Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 180.0), content: Surface(styleClass: "gallery-preview", content: example))
+        Row(gap: 10.0) {
           Button(text: if showCode { "收起源码" } else { "查看 Norm 源码" }, tone: Tone.Neutral,
             appearance: Appearance.Outlined, action: () { showCode = !showCode })
           Button(text: if showApi { "收起 API" } else { "组件 API" }, tone: Tone.Neutral,
@@ -106,7 +111,7 @@ class Gallery implements Widget {
         }
         Text(text: "组合与状态", role: WidgetRole.Title)
         Typography(text: "布局由 Widget 组合完成。可交互值通过 Binding 连接普通字段；移除组件时自动清理监听、动画和弹层。主题从外层 App 或 ConfigProvider 继承。")
-      }))))
+      })))))
   }
 }
 

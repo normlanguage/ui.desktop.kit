@@ -1,5 +1,6 @@
 package ui.kit.test.creation
 
+import ui.fx.nativeComponent
 import std.testing.Test
 import std.core.Exception
 import ui.Renderer
@@ -7,7 +8,6 @@ import ui.fx.JavaFxBackend
 import ui.fx.JavaFxScheduler
 import ui.fx.FxApplication
 import ui.fx.withFxRuntime
-import ui.kit.nativeComponent
 
 class CreationState { Integer released = 0 Boolean failed = false }
 
@@ -32,4 +32,3 @@ Void releasesControlWhenNodeProjectionFails() {
   require(condition: state.failed && state.released == 1,
     message: "A failed node projection releases its initialized control exactly once")
 }
-

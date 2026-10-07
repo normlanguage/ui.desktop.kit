@@ -4,7 +4,7 @@ import ui.Widget
 import ui.NodeKey
 import ui.Binding
 import ui.View
-import ui.ViewContent
+import ui.Scroll
 import ui.describe
 import std.core.Exception
 import ui.kit.fx.AnchorHost
@@ -214,11 +214,11 @@ value Tabs implements Widget {
     if selected.value < 0 || selected.value >= tabs.size() { throw Exception(message: "selected tab is out of range") }
     List<Widget> pages = []
     for tab : tabs {
-      var page = describe(tab.content)
       var identity = if tab.key != null { tab.key } else { NodeKey.Named(tab.title) }
       pages.add(if tab.scroll {
-        View(key: identity, content: ViewContent.Scroll(page))
+        Scroll(key: identity, child: tab.content)
       } else {
+        var page = describe(tab.content)
         View(key: identity, content: page.content, role: page.role, enabled: page.enabled, reference: page.reference)
       })
     }

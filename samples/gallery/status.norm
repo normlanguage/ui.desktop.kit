@@ -1,9 +1,13 @@
 package gallery
 
+import ui.CrossAlignment
+import ui.Box
+import ui.SizeConstraints
+import ui.Dimension
 import ui.Widget
-import ui.kit.Column
-import ui.kit.Row
-import ui.kit.Text
+import ui.Column
+import ui.Row
+import ui.Text
 import ui.Binding
 import theme.Color
 import theme.ThemeDefinition
@@ -26,7 +30,7 @@ import ui.kit.Surface
 class AlertExample implements Widget {
   private Boolean closable = true
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Alert(title: "请检查填写的信息", content: Text("请补充联系人后继续提交。"), closable: closable)
       Button(text: "切换关闭按钮", action: () { closable = !closable })
     }
@@ -36,7 +40,7 @@ class AlertExample implements Widget {
 class MessageExample implements Widget {
   private Boolean visible = false
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: "保存更改", action: () { visible = true })
       Message(text: "更改已保存", open: Binding<Boolean>(read: () { visible }, write: (Boolean next) { visible = next }))
       Text(if visible { "提示正在显示" } else { "提示会自动消失，也会在离开页面时清理" })
@@ -47,7 +51,7 @@ class MessageExample implements Widget {
 class NotificationExample implements Widget {
   private Boolean visible = false
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Button(text: "查看任务完成通知", action: () { visible = true })
       Notification(title: "导出完成", content: Text("本月的数据报表已经准备就绪。"),
         open: Binding<Boolean>(read: () { visible }, write: (Boolean next) { visible = next }))
@@ -59,9 +63,9 @@ class NotificationExample implements Widget {
 class ProgressExample implements Widget {
   private Double progress = 0.35
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Progress(value: progress)
-      Row {
+      Row(gap: 10.0) {
         Button(text: "推进", action: () { progress = if progress >= 1.0 { 0.0 } else { progress + 0.1 } })
         Button(text: "等待中", action: () { progress = -1.0 })
       }
@@ -81,7 +85,7 @@ class ResultExample implements Widget {
 class SkeletonExample implements Widget {
   private Boolean loading = true
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       if loading { Skeleton(lines: 4) } else { Text("项目资料") Text("负责人：林安 · 最近更新：今天") }
       Button(text: if loading { "加载完成" } else { "重新加载" }, action: () { loading = !loading })
     }
@@ -91,8 +95,8 @@ class SkeletonExample implements Widget {
 class SpinExample implements Widget {
   private Boolean loading = false
   Widget build() {
-    Column {
-      Spin(content: Surface(minimumHeight: 140.0, content: Text("这部分内容在处理完成后仍然保留")), spinning: loading)
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
+      Spin(content: Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 140.0), content: Text("这部分内容在处理完成后仍然保留")), spinning: loading)
       Button(text: if loading { "完成处理" } else { "开始处理" }, action: () { loading = !loading })
     }
   }
@@ -101,9 +105,9 @@ class SpinExample implements Widget {
 class WatermarkExample implements Widget {
   private Boolean confidential = true
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Watermark(text: if confidential { "内部资料" } else { "NORM" },
-        content: Surface(minimumHeight: 240.0, content: Text("季度项目报告")))
+        content: Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 240.0), content: Text("季度项目报告")))
       Button(text: "切换水印", action: () { confidential = !confidential })
     }
   }
@@ -112,10 +116,10 @@ class WatermarkExample implements Widget {
 class AffixExample implements Widget {
   private Integer saved = 0
   Widget build() {
-    Surface(minimumHeight: 300.0, content: Affix(
+    Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 300.0), content: Affix(
       fixed: Button(text: "保存 " + saved.toString(), action: () { saved = saved + 1 }),
-      content: Column { for section : ["简介", "内容", "协作", "权限", "发布", "历史"] {
-        Surface(minimumHeight: 110.0, content: Text(section))
+      content: Column(cross: CrossAlignment.Stretch, gap: 12.0) { for section : ["简介", "内容", "协作", "权限", "发布", "历史"] {
+        Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 110.0), content: Text(section))
       } }))
   }
 }
@@ -123,8 +127,8 @@ class AffixExample implements Widget {
 class BorderBeamExample implements Widget {
   private Boolean animated = true
   Widget build() {
-    Column {
-      BorderBeam(animated: animated, content: Surface(minimumHeight: 150.0, content: Text("准备好开始下一个项目")))
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
+      BorderBeam(animated: animated, content: Box(size: SizeConstraints(width: Dimension.Fill, minHeight: 150.0), content: Text("准备好开始下一个项目")))
       Button(text: if animated { "暂停动画" } else { "继续动画" }, action: () { animated = !animated })
     }
   }
@@ -134,7 +138,7 @@ class AppExample implements Widget {
   private ThemeManager theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#722ED1")))
   private Boolean visible = false
   Widget build() {
-    App(theme: theme, content: Column {
+    App(theme: theme, content: Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("这个区域拥有独立的主题和通知容器")
       Button(text: "显示局部通知", action: () { visible = true })
       Message(text: "来自当前 App", open: Binding<Boolean>(read: () { visible }, write: (Boolean next) { visible = next }))
@@ -147,7 +151,7 @@ class ConfigProviderExample implements Widget {
   private ThemeManager theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#13A874")))
   private Boolean override = true
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       ConfigProvider(theme: if override { theme } else { null }, content: Button(text: "局部主题操作", action: () {}))
       Button(text: if override { "恢复继承" } else { "启用局部主题" }, action: () { override = !override })
     }
@@ -158,10 +162,10 @@ class ConfigProviderExample implements Widget {
 class UtilExample implements Widget {
   private Integer count = 0
   Widget build() {
-    Column {
+    Column(cross: CrossAlignment.Stretch, gap: 12.0) {
       Text("状态与生命周期由 Norm UI 管理，控件使用相同的组件树。")
       Text("Surface 为组合内容提供样式入口；业务代码无需操作 JavaFX Node。")
-      Surface(styleClass: "gallery-preview", content: Row {
+      Surface(styleClass: "gallery-preview", content: Row(gap: 10.0) {
         Text("已执行 " + count.toString() + " 次")
         Button(text: "更新状态", action: () { count = count + 1 })
       })

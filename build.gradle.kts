@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.normlanguage"
-version = "3"
+version = "4"
 
 repositories { mavenCentral() }
 
@@ -34,6 +34,7 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
 }
 tasks.processResources {
+    from(providers.gradleProperty("uiRoot").orElse("../ui").map { "$it/ui" }) { include("layouts.norm", "elements.norm"); into("norm-source/ui") }
     from("samples/gallery") { include("**/*.norm"); exclude("tests/**"); into("norm-source/samples/gallery") }
     from("ui/kit") { include("*.norm"); into("norm-source/ui/kit") }
 }

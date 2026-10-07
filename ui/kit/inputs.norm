@@ -1,10 +1,11 @@
 package ui.kit
 
+import ui.CrossAlignment
 import ui.Widget
 import ui.Binding
-import ui.kit.Column as UiColumn
-import ui.kit.Row as UiRow
-import ui.kit.Text as UiText
+import ui.Column as UiColumn
+import ui.Row as UiRow
+import ui.Text as UiText
 import ui.NodeKey
 import ui.WidgetRole
 import std.io.Resource
@@ -67,6 +68,8 @@ import ui.kit.fx.updateSearchableOptions
 import ui.kit.fx.updateTreeOptions
 import ui.kit.fx.updateTransferOptions
 import ui.kit.fx.hostItems
+import ui.kit.fx.hostNullableItems
+import ui.kit.fx.selectionItems
 import ui.kit.fx.inputAdapterMentionsValue
 import ui.kit.fx.inputAdapterAutoCompleteValue
 import ui.kit.fx.inputAdapterCheckboxValue
@@ -89,23 +92,26 @@ import ui.kit.fx.inputAdapterSliderRangeValue
 import ui.kit.fx.inputAdapterSliderRangeBounds
 import ui.kit.fx.mentionsSuggestions
 import ui.kit.fx.autoCompleteSuggestions
-import jdk.base.LocalDate
-import jdk.base.LocalTime
-import jdk.base.BigDecimal
-import std.collections.MutableList
+import java.base.time.LocalDate
+import java.base.time.LocalTime
+import java.base.math.BigDecimal
+import java.base.util.JavaList
 import std.filesystem.Path
+import java.base.io.File as JavaFile
+import java.base.io.fileNew
 import std.concurrent.Task
+import std.concurrent.completionFuture
 import std.core.Unit
 import std.core.Exception
 
 private class ValueHost<C, T> {
   C control
-  ValueLink<T?> value
+  ValueLink<T> value
 }
 
 private class SelectionHost<C, T> {
   C control
-  SelectionLink<T?> value
+  SelectionLink<T> value
 }
 
 value Input implements Widget {
@@ -354,10 +360,10 @@ value Select<T> implements Widget {
   Boolean enabled = true
 
   Widget build() {
-    nativeComponent<ValueHost<SelectControl<T?>, T>>(kind: "ui.kit.Select",
+    nativeComponent<ValueHost<SelectControl<T?>, T?>>(kind: "ui.kit.Select",
       create: () {
         var control = select<T>(items: options)
-        ValueHost<SelectControl<T?>, T>(control: control, value: inputAdapterSelectValue(control)!!)
+        ValueHost<SelectControl<T?>, T?>(control: control, value: inputAdapterSelectValue(control)!!)
       }, node: (host) { host.control },
       update: (host, scope) {
         updateSelectOptions(control: host.control, items: options)
@@ -379,7 +385,7 @@ private List<CascaderItem<T?>> nativeCascaderOptions<T>(List<CascaderOption<T>> 
 
 private class CascaderHost<T> {
   CascaderControl<T?> control
-  SelectionLink<MutableList<T?>?> path
+  SelectionLink<JavaList<T?>> path
 }
 
 value Cascader<T> implements Widget {
@@ -396,10 +402,8 @@ value Cascader<T> implements Widget {
       }, node: (host) { host.control },
       update: (host, scope) {
         updateCascaderOptions(control: host.control, options: nativeCascaderOptions(options))
-        host.path.update(arg0: hostItems(value.value), arg1: scope.bind((MutableList<T?>? next) {
-          List<T> selected = []
-          if next != null { for item : next { if item != null { selected.add(item) } } }
-          value.value = selected
+        host.path.update(arg0: hostNullableItems(value.value), arg1: scope.bind<JavaList<T?>?>((JavaList<T?>? next) {
+          value.value = selectionItems(next)
         }))
       }, close: (host) { host.path.close() }, key: key, enabled: enabled)
   }
@@ -422,10 +426,10 @@ value TreeSelect<T> implements Widget {
   Boolean enabled = true
 
   Widget build() {
-    nativeComponent<SelectionHost<TreeSelectControl<T?>, T>>(kind: "ui.kit.TreeSelect",
+    nativeComponent<SelectionHost<TreeSelectControl<T?>, T?>>(kind: "ui.kit.TreeSelect",
       create: () {
         var control = treeSelect<T>(options: nativeTreeOptions(options))
-        SelectionHost<TreeSelectControl<T?>, T>(control: control, value: inputAdapterTreeSelectValue(control)!!)
+        SelectionHost<TreeSelectControl<T?>, T?>(control: control, value: inputAdapterTreeSelectValue(control)!!)
       }, node: (host) { host.control },
       update: (host, scope) {
         updateTreeOptions(control: host.control, options: nativeTreeOptions(options))
@@ -436,7 +440,7 @@ value TreeSelect<T> implements Widget {
 
 private class TransferHost<T> {
   TransferControl<T?> control
-  SelectionLink<MutableList<T?>?> selected
+  SelectionLink<JavaList<T?>> selected
 }
 
 value Transfer<T> implements Widget {
@@ -453,10 +457,8 @@ value Transfer<T> implements Widget {
       }, node: (host) { host.control },
       update: (host, scope) {
         updateTransferOptions(control: host.control, options: options)
-        host.selected.update(arg0: hostItems(value.value), arg1: scope.bind((MutableList<T?>? next) {
-          List<T> selected = []
-          if next != null { for item : next { if item != null { selected.add(item) } } }
-          value.value = selected
+        host.selected.update(arg0: hostNullableItems(value.value), arg1: scope.bind<JavaList<T?>?>((JavaList<T?>? next) {
+          value.value = selectionItems(next)
         }))
       }, close: (host) { host.selected.close() }, key: key, enabled: enabled)
   }
@@ -477,17 +479,17 @@ value Upload implements Widget {
     nativeComponent<UploadHost>(kind: "ui.kit.Upload",
       create: () { UploadHost(control: uploadNew()) }, node: (host) { host.control },
       update: (host, scope) {
-        inputAdapterUploadTaskHandler(arg0: host.control, arg1: (Path? file, InputAdapterProgress? progress) {
+        inputAdapterUploadTaskHandler(arg0: host.control, arg1: (JavaFile? file, InputAdapterProgress? progress) {
           if file == null || progress == null { throw Exception(message: "Missing upload file or progress reporter") }
-          scope.within<Task<Unit?>>(action: () {
-            uploader(file, (Double amount) { progress.report(amount) })
-          })
+          completionFuture(scope.within<Task<Unit?>>(action: () {
+            uploader(Path(value: file.getPath()!!), (Double amount) { progress.report(amount) })
+          }))
         })
         for file : files {
           var alreadyAdded = false
           for existing : host.added { if existing == file { alreadyAdded = true } }
           if !alreadyAdded {
-            host.control.addFile(file)
+            host.control.addFile(fileNew(file.value)!!)
             host.added.add(file)
           }
         }
@@ -497,7 +499,7 @@ value Upload implements Widget {
 
 private class MultipleSelectHost<T> {
   SelectMultipleControl<T?> control
-  SelectionLink<MutableList<T?>?> selected
+  SelectionLink<JavaList<T?>> selected
 }
 
 value MultipleSelect<T> implements Widget {
@@ -514,10 +516,8 @@ value MultipleSelect<T> implements Widget {
       }, node: (host) { host.control },
       update: (host, scope) {
         updateMultipleOptions(control: host.control, items: options)
-        host.selected.update(arg0: hostItems(value.value), arg1: scope.bind((MutableList<T?>? next) {
-          List<T> selected = []
-          if next != null { for item : next { if item != null { selected.add(item) } } }
-          value.value = selected
+        host.selected.update(arg0: hostNullableItems(value.value), arg1: scope.bind<JavaList<T?>?>((JavaList<T?>? next) {
+          value.value = selectionItems(next)
         }))
       }, close: (host) { host.selected.close() }, key: key, enabled: enabled)
   }
@@ -580,7 +580,7 @@ value NumericRange {
 
 private class RangeSliderHost {
   SliderRangeControl control
-  SelectionLink<MutableList<Double?>?> value
+  SelectionLink<JavaList<Double>> value
 }
 
 value RangeSlider implements Widget {
@@ -601,7 +601,7 @@ value RangeSlider implements Widget {
         var current = value.value
         inputAdapterSliderRangeBounds(arg0: host.control, arg1: minimum, arg2: maximum)
         var changed = scope.bind((NumericRange next) { value.value = next })
-        host.value.update(arg0: hostItems([current.start, current.end]), arg1: (MutableList<Double?>? next) {
+        host.value.update(arg0: hostItems([current.start, current.end]), arg1: (JavaList<Double>? next) {
           if next != null && next.size() == 2 && next.get(0) != null && next.get(1) != null {
             changed(NumericRange(start: next.get(0)!!, end: next.get(1)!!))
           }
@@ -645,7 +645,7 @@ private class FormFieldView<T> implements Widget {
       subscription = observeFields<FormFieldState<T>>(target: state,
         read: (Integer field) {}, changed: (Integer field) { invalid = state.invalid })
     }
-    if invalid { return UiColumn(children: [control, UiText(text: error, role: WidgetRole.Destructive)]) }
+    if invalid { return UiColumn(cross: CrossAlignment.Stretch, children: [control, UiText(text: error, role: WidgetRole.Destructive)], gap: 12.0) }
     control
   }
 
@@ -712,8 +712,7 @@ value Form implements Widget {
     content.add(UiRow(children: [
       Button(text: submitText, action: () { this.submit() return }),
       Button(text: resetText, action: () { this.reset() })
-    ]))
-    UiColumn(children: content)
+    ], gap: 10.0))
+    UiColumn(cross: CrossAlignment.Stretch, children: content, gap: 12.0)
   }
 }
-

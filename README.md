@@ -4,8 +4,8 @@
 
 ```norm
 import ui.Widget
-import ui.kit.Column
-import ui.kit.Text
+import ui.Column
+import ui.Text
 import ui.kit.Button
 
 class SaveExample implements Widget {
@@ -26,7 +26,7 @@ class SaveExample implements Widget {
 
 公开入口见 [ui.kit 模块](ui/kit/module.norm)及 [组件索引](docs/components.md)。[Norm 示例](samples/gallery)展示实际交互；可直接使用的 JavaFX 控件和绑定位于 [Java 源码](src/main/java/dev/normlanguage/ui/component)及底层模块 [`ui.kit.fx`](ui/kit/fx/module.norm)。应用代码以 Widget 层为入口，JavaFX 原生扩展通过 [`ui` 原生视图协议](https://github.com/normlanguage/ui)接入同一渲染树。
 
-在 Windows 上运行示例：`.\scripts\gallery.ps1`。验证示例：`.\scripts\gallery.ps1 -Verify`。依赖仓库不在同级目录时可传 `-UiRoot`、`-UiFxRoot`、`-FxGraphicsRoot`、`-FxControlsRoot`、`-ThemeRoot` 和 `-JdkRoot`；Norm 编译器默认使用同级 `Norm` 仓库的构建产物，也可用 `NORM_EXECUTABLE` 指定。
+在 Windows 上运行示例：`.\scripts\gallery.ps1`。验证示例：`.\scripts\gallery.ps1 -Verify`。依赖仓库不在同级目录时可传 `-UiRoot`、`-UiFxRoot`、`-DiRoot`、`-FxBaseRoot`、`-FxGraphicsRoot`、`-FxControlsRoot` 和 `-ThemeRoot`；DI 绑定仓库也放在 `di` 的同级目录。Norm 编译器默认使用同级 `Norm` 仓库的构建产物，也可用 `NORM_EXECUTABLE` 指定。
 
 本地构建需要 JDK 25。Gradle 解析对应平台的 JavaFX 依赖；定向 Java 验证可运行：
 

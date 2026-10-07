@@ -1,10 +1,11 @@
 Module module() {
-  module(name: "ui.kit.fx", version: 5,
-    exports: ["FormField", "UploadItem", "UploadStatus", "ComponentConfig", "Density", "DateRange", "App", "ConfigProvider", "ThemeSink", "Button", "Input", "Popover", "Modal", "Message", "Notification", "Handle", "FloatButton", "Icon", "Typography", "Divider", "Flex", "Grid", "Layout", "Masonry", "Space", "Splitter", "Anchor", "Breadcrumb", "Dropdown", "Menu", "Pagination", "Steps", "Tabs", "AutoComplete", "Cascader", "Checkbox", "ColorPicker", "DatePicker", "Form", "InputNumber", "Mentions", "Radio", "Rate", "Select", "Slider", "Switch", "TimePicker", "Transfer", "TreeSelect", "Upload", "Avatar", "Badge", "Calendar", "Card", "Carousel", "Collapse", "Descriptions", "Empty", "Image", "ListView", "Listy", "QRCode", "Segmented", "Statistic", "Table", "Tag", "Timeline", "Tooltip", "Tour", "Tree", "Alert", "Drawer", "Popconfirm", "Progress", "Result", "Skeleton", "Spin", "Watermark", "Affix", "BorderBeam", "Util", "AnchorItem", "BreadcrumbItem", "CascaderItem", "TourStep", "FloatButtonGroup", "SliderRange", "DatePickerRange", "SelectMultiple", "SelectSearchable", "ValueLink", "ContentOwnership", "OverlayHost", "DisplayAdapter", "SelectionLink", "TreeSelectionLink", "InputAdapter", "NavigationLayoutAdapter", "AnchorHost", "DropdownHost", "FloatButtonHost", "IndexLink", "OverlayAdapter", "FeedbackAdapter", "AffixHost", "NoticeHost", "InputAdapterProgress", "TableSortState", "TableSortLink", "TreeCheckLink", "Surface", "connection", "collections"],
-    dependencies: [dependency(repository: "github", name: "jdk.base", version: 1), dependency(repository: "github", name: "fx.controls", version: 3), dependency(repository: "github", name: "theme", version: 1)],
+  module(name: "ui.kit.fx", version: 6,
+    exports: ["KitEnvironment", "FormField", "UploadItem", "UploadStatus", "ComponentConfig", "Density", "DateRange", "App", "ConfigProvider", "ThemeSink", "Button", "Input", "Popover", "Modal", "Message", "Notification", "Handle", "FloatButton", "Icon", "Typography", "Divider", "Splitter", "Anchor", "Breadcrumb", "Dropdown", "Menu", "Pagination", "Steps", "Tabs", "AutoComplete", "Cascader", "Checkbox", "ColorPicker", "DatePicker", "Form", "InputNumber", "Mentions", "Radio", "Rate", "Select", "Slider", "Switch", "TimePicker", "Transfer", "TreeSelect", "Upload", "Avatar", "Badge", "Calendar", "Card", "Carousel", "Collapse", "Descriptions", "Empty", "Image", "ListView", "Listy", "QRCode", "Segmented", "Statistic", "Table", "Tag", "Timeline", "Tooltip", "Tour", "Tree", "Alert", "Drawer", "Popconfirm", "Progress", "Result", "Skeleton", "Spin", "Watermark", "Affix", "BorderBeam", "Util", "AnchorItem", "BreadcrumbItem", "CascaderItem", "TourStep", "FloatButtonGroup", "SliderRange", "DatePickerRange", "SelectMultiple", "SelectSearchable", "ValueLink", "ContentOwnership", "OverlayHost", "DisplayAdapter", "SelectionLink", "TreeSelectionLink", "InputAdapter", "NavigationLayoutAdapter", "AnchorHost", "DropdownHost", "FloatButtonHost", "IndexLink", "OverlayAdapter", "FeedbackAdapter", "AffixHost", "NoticeHost", "InputAdapterProgress", "TableSortState", "TableSortLink", "TreeCheckLink", "Surface", "connection", "collections"],
+    dependencies: [dependency(repository: "github", name: "ui.fx", version: 5), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "fx.controls", version: 4), dependency(repository: "github", name: "theme", version: 2)],
     binding: jarBinding(
-      target: mavenJar(group: "dev.normlanguage", artifact: "ui-component", version: "3", resolution: sha256("3f85c38ca51f8769b9575cc1ec3146e85909590d90a7aae17bc734e07f61893b")),
+      target: mavenJar(group: "dev.normlanguage", artifact: "ui-component", version: "4", resolution: sha256("6b7d48b2a6c46b677428bdc75eae8765e05236c405b840551f1112e08d96763b")),
       api: [
+        jarType(name: "dev.normlanguage.ui.component.KitEnvironment", members: ["apply", "clear"]),
         jarType(name: "dev.normlanguage.ui.component.Form.Field", members: ["getName", "getControl", "valueProperty", "getValue", "validate", "reset"], borrowed: ["getControl"]),
         jarType(name: "dev.normlanguage.ui.component.Upload.Item", members: ["getFile", "getStatus", "getProgress", "statusProperty", "progressProperty"]),
         jarType(name: "dev.normlanguage.ui.component.Upload.Status", members: []),
@@ -25,11 +26,6 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.Icon", members: ["new", "setIconLiteral", "setIconSize"]),
         jarType(name: "dev.normlanguage.ui.component.Typography", members: ["new", "setText", "getText", "setCopyable", "setEditable", "beginEdit", "commitEdit", "cancelEdit", "setOnEditCommit"]),
         jarType(name: "dev.normlanguage.ui.component.Divider", members: ["new", "setOrientation"]),
-        jarType(name: "dev.normlanguage.ui.component.Flex", members: ["new", "setWrap", "setAlignment", "setGrow", "getChildren", "setHgap", "setVgap", "setOrientation"]),
-        jarType(name: "dev.normlanguage.ui.component.Grid", members: ["new", "add", "addItem", "setResponsiveColumns", "getCurrentColumns", "setHgap", "setVgap"]),
-        jarType(name: "dev.normlanguage.ui.component.Layout", members: ["new", "setTop", "setBottom", "setLeft", "setRight", "setCenter"]),
-        jarType(name: "dev.normlanguage.ui.component.Masonry", members: ["new", "getChildren", "setMinimumColumnWidth", "setGap"]),
-        jarType(name: "dev.normlanguage.ui.component.Space", members: ["new", "getChildren", "setSpacing"]),
         jarType(name: "dev.normlanguage.ui.component.Splitter", members: ["new", "getItems", "setDividerPosition", "setOrientation"]),
         jarType(name: "dev.normlanguage.ui.component.Anchor", members: ["new", "getItems", "scrollTo", "getActiveItem"]),
         jarType(name: "dev.normlanguage.ui.component.Breadcrumb", members: ["new", "getItems"]),
@@ -103,7 +99,7 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.SelectionLink", members: ["new", "node", "update", "unbind", "close"], borrowed: ["node"]),
         jarType(name: "dev.normlanguage.ui.component.TreeSelectionLink", members: ["new", "update", "unbind", "close"]),
         jarType(name: "dev.normlanguage.ui.component.InputAdapter", members: ["inputSubmit", "inputValue", "mentionsValue", "autoCompleteValue", "checkboxValue", "radioValue", "switchValue", "dateValue", "timeValue", "select", "selectMultiple", "selectSearchable", "selectOptions", "multipleOptions", "searchableOptions", "cascaderOptions", "treeSelect", "treeOptions", "transferOptions", "selectValue", "dateRangeValue", "numberValue", "rateValue", "sliderValue", "sliderRangeValue", "sliderRangeBounds", "colorHexValue", "colorHex", "cascaderPath", "treeSelectValue", "multipleValue", "transferValue", "uploadTaskHandler"]),
-        jarType(name: "dev.normlanguage.ui.component.NavigationLayoutAdapter", members: ["flex", "space", "splitter", "createSteps", "buttonAction", "masonry", "clearMenu", "grid", "anchorHost", "anchor", "anchorSelection", "breadcrumb", "menuGroup", "dropdown", "floatButton", "floatButtonContent", "dropdownContent", "tabs", "tabsSelection", "paginationSelection", "stepsSelection", "steps"]),
+        jarType(name: "dev.normlanguage.ui.component.NavigationLayoutAdapter", members: ["splitter", "createSteps", "buttonAction", "clearMenu", "anchorHost", "anchor", "anchorSelection", "breadcrumb", "menuGroup", "dropdown", "floatButton", "floatButtonContent", "dropdownContent", "tabs", "tabsSelection", "paginationSelection", "stepsSelection", "steps"]),
         jarType(name: "dev.normlanguage.ui.component.NavigationLayoutAdapter.AnchorHost", members: ["anchor", "scrollPane", "close"], borrowed: ["anchor", "scrollPane"]),
         jarType(name: "dev.normlanguage.ui.component.NavigationLayoutAdapter.DropdownHost", members: ["node", "title", "close"], borrowed: ["node"]),
         jarType(name: "dev.normlanguage.ui.component.NavigationLayoutAdapter.FloatButtonHost", members: ["node", "title", "action", "close"], borrowed: ["node"]),
@@ -116,7 +112,6 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.TableSortState", members: ["new", "heading", "descending"]),
         jarType(name: "dev.normlanguage.ui.component.TableSortLink", members: ["new", "columns", "update", "unbind", "close"]),
         jarType(name: "dev.normlanguage.ui.component.TreeCheckLink", members: ["new", "update", "unbind", "close"]),
-        jarType(name: "dev.normlanguage.ui.component.Surface", members: ["new", "setContent", "setClassName", "setMinHeight"])
+        jarType(name: "dev.normlanguage.ui.component.Surface", members: ["new", "setContent", "setClassName"])
       ]))
 }
-

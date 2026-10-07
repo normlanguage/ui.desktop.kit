@@ -12,7 +12,7 @@ import theme.ThemeDefinition
 import theme.Color
 
 Module module() {
-  module(dependencies: [dependency(repository: "github", name: "ui", version: 6), dependency(repository: "github", name: "ui.fx", version: 4), dependency(repository: "github", name: "ui.kit", version: 1), dependency(repository: "github", name: "ui.kit.fx", version: 1), dependency(repository: "github", name: "theme", version: 1)])
+  module(dependencies: [dependency(repository: "github", name: "ui", version: 7), dependency(repository: "github", name: "ui.fx", version: 5), dependency(repository: "github", name: "ui.kit", version: 6), dependency(repository: "github", name: "ui.kit.fx", version: 6), dependency(repository: "github", name: "theme", version: 2)])
 }
 class State { Boolean enabled = false }
 Void main() {

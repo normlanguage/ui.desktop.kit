@@ -2,75 +2,75 @@ package ui.kit
 
 import ui.Widget
 import ui.NodeKey
+import ui.ThemeProvider
+import ui.UiConfiguration
 import theme.ThemeSource
+import ui.fx.themeCss
 import ui.kit.fx.App as AppControl
 import ui.kit.fx.ConfigProvider as ProviderControl
 import ui.kit.fx.componentConfigNew
-import ui.kit.fx.componentConfigDefaults
+import ui.kit.fx.Density
 import ui.kit.fx.ComponentConfig
 import ui.kit.fx.ContentOwnership
 import ui.kit.fx.appNew
 import ui.kit.fx.configProviderNew
-import ui.kit.fx.connectTheme
-
-private class ThemeRoot<T> {
-  T control
-  ThemeSource? source = null
-}
 
 value App implements Widget {
   ThemeSource theme
   Widget content
-  ComponentConfig? config = null
+  KitConfiguration? config = null
   String? stylesheet = null
   NodeKey? key = null
 
   Widget build() {
-    nativeComponent<ThemeRoot<AppControl>>(kind: "ui.kit.App",
-      create: () { ThemeRoot<AppControl>(control: appNew(arg0: null, arg1: ContentOwnership.EXTERNAL)) },
-      node: (peer) { peer.control },
-      update: (peer, scope) {
-        peer.control.setConfig(config)
-        peer.control.setStylesheet(stylesheet)
-        if peer.source != theme {
-          connectTheme(provider: peer.control, theme: theme)
-          peer.source = theme
-        }
+    ThemeProvider(source: theme, child: nativeComponent<AppControl>(kind: "ui.kit.App",
+      create: () { appNew(arg0: null, arg1: ContentOwnership.EXTERNAL) },
+      node: (control) { control }, update: (control, scope) {
+        control.setConfig(null)
+        control.setStylesheet(stylesheet)
       }, children: [content],
-      arrange: (peer, nodes) { peer.control.setContent(nodes[0]) },
-      close: (peer) { peer.control.close() }, key: key)
+      arrange: (control, nodes) { control.setContent(nodes[0]) },
+      applyConfiguration: (control, configuration) { control.setConfig(projectConfiguration(configuration: configuration, config: config, inherited: control.getEffectiveConfig()!!)) },
+      applyTheme: (control, snapshot) { if snapshot != null { control.publishTheme(themeCss(snapshot)) } else { control.clearTheme() } },
+      close: (control) { control.close() }, key: key))
   }
 }
 
 value ConfigProvider implements Widget {
   Widget content
   ThemeSource? theme = null
-  ComponentConfig? config = null
+  KitConfiguration? config = null
   String? stylesheet = null
   NodeKey? key = null
 
   Widget build() {
-    nativeComponent<ThemeRoot<ProviderControl>>(kind: "ui.kit.ConfigProvider",
-      create: () { ThemeRoot<ProviderControl>(control: configProviderNew(ContentOwnership.EXTERNAL)) },
-      node: (peer) { peer.control },
-      update: (peer, scope) {
-        peer.control.setConfig(config)
-        peer.control.setStylesheet(stylesheet)
-        var source = theme
-        if peer.source != source {
-          if source == null { peer.control.clearTheme() }
-          else { connectTheme(provider: peer.control, theme: source) }
-          peer.source = source
-        }
-      }, children: [content],
-      arrange: (peer, nodes) { peer.control.setContent(nodes[0]) },
-      close: (peer) { peer.control.close() }, key: key)
+    var child = nativeComponent<ProviderControl>(kind: "ui.kit.ConfigProvider",
+      create: () { configProviderNew(ContentOwnership.EXTERNAL) },
+      node: (control) { control }, update: (control, scope) {
+        control.setConfig(null)
+        control.setStylesheet(stylesheet)
+      }, children: [content], arrange: (control, nodes) { control.setContent(nodes[0]) },
+      applyConfiguration: (control, configuration) { control.setConfig(projectConfiguration(configuration: configuration, config: config, inherited: control.getEffectiveConfig()!!)) },
+      applyTheme: (control, snapshot) { if snapshot != null { control.publishTheme(themeCss(snapshot)) } else { control.clearTheme() } },
+      close: (control) { control.close() }, key: key)
+    ThemeProvider(source: theme, child: child)
   }
 }
 
-ComponentConfig configuration(String fontFamily = "System", Double fontSize = 14.0,
-    Double radius = 6.0, Boolean motionEnabled = true) {
-  var defaults = componentConfigDefaults()!!
-  componentConfigNew(arg0: fontFamily, arg1: fontSize, arg2: defaults.density(),
-    arg3: radius, arg4: motionEnabled, arg5: defaults.locale())
+enum ComponentDensity { Compact, Standard, Spacious }
+
+value KitConfiguration {
+  Double radius = 6.0
+  ComponentDensity density = ComponentDensity.Standard
+}
+
+private ComponentConfig? projectConfiguration(UiConfiguration configuration, KitConfiguration? config, ComponentConfig inherited) {
+  if config == null { return null }
+  Density density = switch config.density {
+      case Compact { break Density.COMPACT }
+      case Standard { break Density.STANDARD }
+      case Spacious { break Density.SPACIOUS }
+  }
+  componentConfigNew(arg0: configuration.fontFamily, arg1: configuration.fontSize, arg2: density,
+    arg3: config.radius, arg4: configuration.motionEnabled, arg5: inherited.locale())
 }

@@ -1,8 +1,9 @@
 package gallery
 
+import ui.CrossAlignment
 import ui.Widget
-import ui.kit.Text
-import ui.kit.Column as Vertical
+import ui.Text
+import ui.Column as Vertical
 import ui.Binding
 import ui.kit.Button as ActionButton
 import ui.kit.Modal
@@ -19,10 +20,10 @@ class ModalExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Modal(title: "删除记录", anchor: ActionButton(text: "打开对话框", action: () { open = true }),
-        content: Vertical {Text("这是一条需要确认的记录。") 
-          ActionButton(text: "关闭对话框", action: () { open = false })}, open: visibility) 
+        content: Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {Text("这是一条需要确认的记录。")
+          ActionButton(text: "关闭对话框", action: () { open = false })}, open: visibility)
       Text(if open { "对话框已打开" } else { "对话框已关闭" })
     }
   }
@@ -33,11 +34,11 @@ class DrawerExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Drawer(anchor: ActionButton(text: "查看详情", action: () { open = true }),
-        content: Vertical {Text("右侧面板")  Text("这里展示当前项目的详细信息。") 
+        content: Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {Text("右侧面板")  Text("这里展示当前项目的详细信息。")
           ActionButton(text: "完成", action: () { open = false })},
-        open: visibility, side: DrawerSide.Right) 
+        open: visibility, side: DrawerSide.Right)
       Text(if open { "详情面板已打开" } else { "详情面板已关闭" })
     }
   }
@@ -48,10 +49,10 @@ class PopoverExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Popover(anchor: ActionButton(text: "更多操作", action: () { open = !open }),
-        content: Vertical {Text("可在这里执行当前项操作") 
-          ActionButton(text: "关闭", action: () { open = false })}, open: visibility) 
+        content: Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {Text("可在这里执行当前项操作")
+          ActionButton(text: "关闭", action: () { open = false })}, open: visibility)
       Text(if open { "操作菜单已打开" } else { "操作菜单已关闭" })
     }
   }
@@ -62,9 +63,9 @@ class TooltipExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Tooltip(anchor: ActionButton(text: "悬停、聚焦或点击", action: () { open = !open }),
-        text: "提示会继承所在主题", open: visibility) 
+        text: "提示会继承所在主题", open: visibility)
       Text("把焦点移到按钮上也能看到提示。")
     }
   }
@@ -76,10 +77,10 @@ class PopconfirmExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Popconfirm(anchor: ActionButton(text: "删除项目", action: () { open = true }),
         question: "确定删除当前项目吗？", open: visibility,
-        confirmed: () { confirmed = confirmed + 1 }) 
+        confirmed: () { confirmed = confirmed + 1 })
       Text("已确认 " + confirmed.toString() + " 次")
     }
   }
@@ -90,12 +91,12 @@ class TourExample implements Widget {
 
   Widget build() {
     Binding<Boolean> visibility = Binding<Boolean>(read: () { open }, write: (Boolean next) { open = next })
-    Vertical {
-      ActionButton(text: "开始引导", action: () { open = true }) 
+    Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
+      ActionButton(text: "开始引导", action: () { open = true })
       Tour(steps: [
         TourStep(target: ActionButton(text: "第一步 · 创建", action: () {}), title: "创建项目", description: "从这里创建新的项目。"),
         TourStep(target: ActionButton(text: "第二步 · 设置", action: () {}), title: "配置项目", description: "调整主题和运行选项。")
-      ], open: visibility) 
+      ], open: visibility)
       Text(if open { "正在引导" } else { "引导未开始" })
     }
   }

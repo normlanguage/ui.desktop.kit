@@ -3,7 +3,7 @@ package ui.kit.test.inputs
 import std.testing.Test
 import ui.Widget
 import ui.Binding
-import ui.kit.Column as UiColumn
+import ui.Column as UiColumn
 import ui.kit.Input
 import ui.kit.Checkbox
 import ui.kit.Select

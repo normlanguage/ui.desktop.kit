@@ -2,6 +2,9 @@ package ui.kit.test.inputs_runtime
 
 import std.testing.Test
 import std.concurrent.startTask
+import std.concurrent.completion
+import std.concurrent.delay
+import std.time.duration
 import std.core.Unit
 import std.core.Exception
 import ui.Widget
@@ -42,13 +45,15 @@ import ui.kit.fx.TreeSelect as NativeTreeSelect
 import ui.kit.fx.DatePicker as NativeDatePicker
 import ui.kit.fx.SliderRange as NativeRangeSlider
 import ui.kit.fx.Upload as NativeUpload
-import jdk.base.LocalDate
-import jdk.base.LocalTime
-import jdk.base.BigDecimal
-import jdk.base.localDateOf
-import jdk.base.localTimeOf
-import jdk.base.bigDecimalNew
+import ui.kit.fx.UploadStatus
+import java.base.time.LocalDate
+import java.base.time.LocalTime
+import java.base.math.BigDecimal
+import java.base.time.localDateOf
+import java.base.time.localTimeOf
+import java.base.math.bigDecimalNew
 import std.filesystem.Path
+import java.base.io.fileNew
 
 class InputState {
   String text = "开始"
@@ -211,7 +216,7 @@ Void treeAndUploadRetainStateAcrossNativeUnmount() {
         application.root(fxHandle(renderer.node()))
         switch fxHandle(renderer.node()).nativeNode() {
           case NativeUpload control {
-            control.addFile(Path(value: "ui/kit/module.norm"))
+            control.addFile(fileNew("ui/kit/module.norm")!!)
             require(condition: control.getItems()!!.size() == 1, message: "native upload accepts a Norm Path")
           }
           case _ { require(condition: false, message: "Upload mounts native queue") }
@@ -225,6 +230,50 @@ Void treeAndUploadRetainStateAcrossNativeUnmount() {
     }, dispose: renderer.close)
     require(condition: outcome.completed && outcome.failure == null,
       message: if outcome.failure == null { "tree and upload did not complete" } else { outcome.failure!! })
+}
+
+Void uploadCancellationReachesOwnedNormTask() {
+  var application = FxApplication("Upload cancellation verification")
+  var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+  var outcome = RuntimeOutcome()
+  var watchdog = startTask(() {
+    delay(duration(seconds: 5, nanoseconds: 0))
+    application.later(() { throw Exception(message: "Upload cancellation did not reach the Norm task") })
+  })
+  try {
+    application.run(build: () {
+      renderer.render(Upload(uploader: (Path file, Function<Void(Double)> progress) {
+        var source = completion<Unit?>()
+        var task = source.task()
+        task.error((Exception failure) {
+          application.later(() {
+            switch fxHandle(renderer.node()).nativeNode() {
+              case NativeUpload control {
+                require(condition: task.completed() && control.getItems()!!.get(0)!!.getStatus() == UploadStatus.CANCELLED,
+                  message: "native cancellation reaches the owned Norm task")
+                outcome.completed = true
+              }
+              case _ { throw Exception(message: "Upload control was replaced before cancellation") }
+            }
+            application.close()
+          })
+        })
+        application.later(() {
+          switch fxHandle(renderer.node()).nativeNode() {
+            case NativeUpload control { control.cancel(control.getItems()!!.get(0)!!) return }
+            case _ { throw Exception(message: "Upload did not mount") }
+          }
+        })
+        task
+      }).build())
+      application.root(fxHandle(renderer.node()))
+      switch fxHandle(renderer.node()).nativeNode() {
+        case NativeUpload control { control.addFile(fileNew("ui/kit/module.norm")!!) return }
+        case _ { throw Exception(message: "Upload did not mount") }
+      }
+    }, dispose: renderer.close)
+  } finally { watchdog.close() }
+  require(condition: outcome.completed, message: "Upload cancellation completed through its Java future")
 }
 
 Void mountedFormValidatesSubmitsAndRestoresItsInitialValues() {
@@ -275,6 +324,7 @@ Void verifiesInputWidgetsInOneJavaFxRuntime() {
     mountsEveryInputWidgetInARealJavaFxWindow()
     nativeInputEditsWriteNormBindingsAndSurviveReconciliation()
     treeAndUploadRetainStateAcrossNativeUnmount()
+    uploadCancellationReachesOwnedNormTask()
     mountedFormValidatesSubmitsAndRestoresItsInitialValues()
   })
 }

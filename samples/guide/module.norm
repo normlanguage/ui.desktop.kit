@@ -1,8 +1,8 @@
 Module module() {
   module(name: "guide", version: 1,
     exports: ["application"],
-    dependencies: [dependency(repository: "github", name: "ui.kit.fx", version: 5), dependency(repository: "github", name: "ui.fx", version: 4), dependency(repository: "github", name: "ui.kit", version: 5),
-      dependency(repository: "github", name: "ui", version: 6),
-      dependency(repository: "github", name: "theme", version: 1),
-      dependency(repository: "github", name: "jdk.base", version: 1)])
+    dependencies: [dependency(repository: "github", name: "ui.kit.fx", version: 6), dependency(repository: "github", name: "ui.fx", version: 5), dependency(repository: "github", name: "ui.kit", version: 6),
+      dependency(repository: "github", name: "ui", version: 7),
+      dependency(repository: "github", name: "theme", version: 2),
+      dependency(repository: "norm", name: "java.base", version: 1)])
 }
