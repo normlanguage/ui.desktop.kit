@@ -16,12 +16,13 @@ private class ComponentEnvironment { Node? node = null }
 View nativeComponent<T>(String kind, Function<T()> create, Function<Node(T)> node,
     Function<Void(T, ViewScope)> update, Function<Void(T)> close,
     List<Widget> children = [], Function<Void(T, List<Node>)>? arrange = null,
+    Function<List<Widget>(T)>? childrenBuilder = null,
     NodeKey? key = null, Boolean enabled = true, Function<Void(T, Theme?)>? applyTheme = null,
     Function<Void(T, UiConfiguration)>? applyConfiguration = null) {
   var environment = ComponentEnvironment()
   fxComponent<T>(kind: kind, create: create,
     node: (control) { var projected = node(control) environment.node = projected projected },
-    update: update, children: children, arrange: arrange, key: key, enabled: enabled,
+    update: update, children: children, childrenBuilder: childrenBuilder, arrange: arrange, key: key, enabled: enabled,
     applyTheme: applyTheme,
     applyConfiguration: (control, configuration) {
       var projected = node(control)
