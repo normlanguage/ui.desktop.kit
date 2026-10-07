@@ -6,11 +6,11 @@ import gallery.Gallery
 import gallery.GalleryPage
 import gallery.galleryPages
 import ui.Renderer
-import ui.fx.JavaFxBackend
-import ui.fx.JavaFxScheduler
-import ui.fx.fxHandle
-import ui.fx.FxApplication
-import ui.fx.withFxRuntime
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
+import ui.desktop.fxHandle
+import ui.desktop.FxApplication
+import ui.desktop.withFxRuntime
 import gallery.internal.gallerySupportCapture
 import gallery.internal.gallerySupportRequireButton
 import ui.theme.ThemeManager

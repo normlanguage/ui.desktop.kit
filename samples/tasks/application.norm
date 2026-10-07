@@ -1,0 +1,142 @@
+package tasks
+
+import std.application.applicationDirectory
+import std.filesystem.Path
+import std.core.Exception
+import ui.NodeKey
+import ui.Widget
+import ui.Binding
+import ui.Column
+import ui.Row
+import ui.Box
+import ui.Insets
+import ui.CrossAlignment
+import ui.Text
+import ui.WidgetRole
+import ui.ForEach
+import ui.ValueKey
+import ui.Scroll
+import ui.desktop.DesktopApp
+import ui.desktop.CloseRequest
+import ui.desktop.kit.App
+import ui.desktop.kit.Input
+import ui.desktop.kit.Button
+import ui.desktop.kit.Checkbox
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.ThemeMode
+import ui.theme.Color
+import ui.theme.Tone
+import ui.theme.Appearance
+
+class TaskBoard implements Widget {
+  ThemeManager theme
+  TaskStore store
+  String draft = ""
+  String query = ""
+  Boolean completedOnly = false
+  Boolean dark = false
+  Boolean dirty = false
+  String status = ""
+  List<TaskItem> items = []
+  private Boolean loaded = false
+  private Integer nextId = 1
+  private CloseRequest? closing = null
+
+  Void init() { this.load() }
+
+  Void load() {
+    loaded = false
+    try {
+      var snapshot = store.load()
+      items = snapshot.items
+      nextId = snapshot.nextId
+      this.loaded = true
+      status = ""
+    } catch Exception error { status = error.message }
+  }
+
+  Void add() {
+    if !loaded { return }
+    var title = draft.trim()
+    if title.isBlank { return }
+    items = [for (item : items) item, TaskItem(id: nextId, title: title)]
+    nextId = nextId + 1
+    draft = ""
+    dirty = true
+  }
+
+  Void complete(Integer id, Boolean completed) {
+    if !loaded { return }
+    items = [for (item : items) if item.id == id { TaskItem(id: item.id, title: item.title, completed: completed) } else { item }]
+    dirty = true
+  }
+
+  Void remove(Integer id) {
+    if !loaded { return }
+    items = [for (item : items) if (item.id != id) item]
+    dirty = true
+  }
+
+  Boolean save() {
+    if !loaded { return false }
+    try {
+      store.save(TaskSnapshot(nextId: nextId, items: items))
+      dirty = false
+      status = "已保存"
+      return true
+    } catch Exception error { status = error.message return false }
+  }
+
+  Void requestClose(CloseRequest request) {
+    if !dirty && draft.isBlank { request.accept() return }
+    closing = request
+  }
+
+  Widget build() {
+    App(theme: theme, content: Box(padding: Insets(top: 28.0, right: 32.0, bottom: 28.0, left: 32.0), content:
+      Column(cross: CrossAlignment.Stretch, gap: 16.0) {
+        Row(gap: 12.0) {
+          Text(text: "任务", role: WidgetRole.Title)
+          Text(text: if dirty { "未保存" } else { "无未保存更改" }, role: WidgetRole.Muted)
+          Button(text: if dark { "浅色" } else { "深色" }, tone: Tone.Neutral, appearance: Appearance.Soft, action: () {
+            dark = !dark theme.setMode(if dark { ThemeMode.Dark } else { ThemeMode.Light })
+          })
+        }
+        Row(gap: 10.0) {
+          Input(key: NodeKey.Named("task-title"), placeholder: "添加任务，按回车确认", value: Binding<String>(read: () { draft }, write: (String next) { draft = next }), submit: this.add)
+          Button(key: NodeKey.Named("task-add"), text: "添加", action: this.add, enabled: loaded && !draft.isBlank)
+          Button(key: NodeKey.Named("task-save"), text: "保存", action: () { this.save() return }, enabled: loaded && dirty)
+        }
+        Row(gap: 12.0) {
+          Input(placeholder: "搜索任务", value: Binding<String>(read: () { query }, write: (String next) { query = next }))
+          Checkbox(text: "只看已完成", value: Binding<Boolean>(read: () { completedOnly }, write: (Boolean next) { completedOnly = next }))
+        }
+        Scroll(child: Column(cross: CrossAlignment.Stretch, gap: 8.0) {
+          ForEach<TaskItem>(items: [for (item : items) if (item.title.contains(query) && (!completedOnly || item.completed)) item],
+            identity: (TaskItem item) { ValueKey<Integer>(item.id) }, child: (TaskItem item) {
+              Row(gap: 12.0) {
+                Checkbox(text: item.title, value: Binding<Boolean>(read: () { item.completed }, write: (Boolean next) { this.complete(id: item.id, completed: next) }))
+                Button(text: "删除", tone: Tone.Neutral, appearance: Appearance.Plain, action: () { this.remove(item.id) })
+              }
+            })
+        })
+        if status != "" { Text(status) }
+        if !loaded { Button(text: "重新加载", action: this.load) }
+        if closing != null {
+          Row(gap: 10.0) {
+            Text("还有未保存的更改")
+            Button(text: "继续编辑", action: () { closing?.cancel() closing = null })
+            Button(text: "放弃并退出", tone: Tone.Danger, action: () { closing?.accept() closing = null })
+          }
+        }
+      }))
+  }
+}
+
+Void main() {
+  var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#2563EB")))
+  var board = TaskBoard(theme: theme, store: TaskStore(file: Path(value: applicationDirectory().value + "/tasks.json")))
+  try { DesktopApp(title: "Norm 任务", home: board, width: 900.0, height: 700.0, onCloseRequested: board.requestClose).run() }
+  finally { theme.close() }
+}

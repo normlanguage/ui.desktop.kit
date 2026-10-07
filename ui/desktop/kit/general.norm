@@ -1,0 +1,96 @@
+package ui.desktop.kit
+
+import ui.Widget
+import ui.NodeKey
+import ui.Binding
+import ui.theme.Tone
+import ui.theme.Appearance
+import ui.desktop.kit.internal.Button as ButtonControl
+import ui.desktop.kit.internal.buttonNew
+import ui.desktop.kit.internal.styleButton
+import ui.desktop.kit.internal.utilCloseNode
+import ui.desktop.kit.internal.Icon as IconControl
+import ui.desktop.kit.internal.Typography as TypographyControl
+import ui.desktop.kit.internal.FloatButtonHost
+import ui.desktop.kit.internal.iconNew
+import ui.desktop.kit.internal.typographyNew
+import ui.desktop.kit.internal.navigationLayoutAdapterFloatButton
+import ui.desktop.kit.internal.navigationLayoutAdapterFloatButtonContent
+import ui.desktop.kit.internal.navigationLayoutAdapterButtonAction
+
+value Button implements Widget {
+  String text
+  Function<Void()> action
+  Boolean enabled = true
+  Boolean loading = false
+  Tone tone = Tone.Primary
+  Appearance appearance = Appearance.Filled
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<ButtonControl>(kind: "ui.desktop.kit.Button",
+      create: () { buttonNew(text) }, node: (control) { control },
+      update: (control, scope) {
+        control.setText(text)
+        control.setLoading(loading)
+        styleButton(control: control, tone: tone, appearance: appearance)
+        var callback = scope.bind(action)
+        navigationLayoutAdapterButtonAction(arg0: control, arg1: callback)
+      }, close: (control) { control.close() }, key: key, enabled: enabled)
+  }
+}
+
+value FloatButton implements Widget {
+  String text
+  Widget content
+  Function<Void()> action
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<FloatButtonHost>(kind: "ui.desktop.kit.FloatButton",
+      create: () { navigationLayoutAdapterFloatButton(text)!! }, node: (host) { host.node()!! },
+      update: (host, scope) {
+        host.title(text)
+        host.action(scope.bind(action))
+      }, children: [content],
+        arrange: (host, nodes) { navigationLayoutAdapterFloatButtonContent(arg0: host, arg1: nodes[0]) },
+      close: (host) { host.close() }, key: key)
+  }
+}
+
+value Icon implements Widget {
+  String literal
+  Integer size = 16
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<IconControl>(kind: "ui.desktop.kit.Icon",
+      create: () { iconNew(literal) }, node: (control) { control },
+      update: (control, scope) {
+        control.setIconLiteral(literal)
+        control.setIconSize(size)
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}
+
+value Typography implements Widget {
+  String text
+  Boolean copyable = false
+  Binding<String>? edited = null
+  NodeKey? key = null
+
+  Widget build() {
+    nativeComponent<TypographyControl>(kind: "ui.desktop.kit.Typography",
+      create: () { typographyNew(text) }, node: (control) { control },
+      update: (control, scope) {
+        var current = edited
+        control.setText(if current != null { current.value } else { text })
+        control.setCopyable(copyable)
+        control.setEditable(current != null)
+        if current != null {
+          var changed = scope.bind((String next) { current.value = next })
+          control.setOnEditCommit((event) { changed(control.getText()!!) })
+        } else { control.setOnEditCommit(null) }
+      }, close: (control) { utilCloseNode(control) }, key: key)
+  }
+}

@@ -1,0 +1,18 @@
+package tasks.test.storage
+
+import std.testing.Test
+import std.filesystem.Path
+import tasks.TaskStore
+import tasks.TaskSnapshot
+import tasks.TaskItem
+
+@Test
+Void savesStableIdentityAndDuplicateTitles() {
+  var store = TaskStore(file: Path(value: "build/acceptance/tasks.json"))
+  var snapshot = TaskSnapshot(nextId: 4, items: [
+    TaskItem(id: 1, title: "Same title", completed: false),
+    TaskItem(id: 3, title: "Same title", completed: true)])
+  store.save(snapshot)
+  var loaded = store.load()
+  require(condition: loaded == snapshot, message: "Atomic JSON round trip preserves IDs, text, completion and next ID")
+}

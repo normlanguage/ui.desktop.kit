@@ -8,10 +8,10 @@ import ui.Column
 import ui.Row
 import ui.theme.Tone
 import ui.theme.Appearance
-import ui.fx.kit.Button
-import ui.fx.kit.FloatButton
-import ui.fx.kit.Icon
-import ui.fx.kit.Typography
+import ui.desktop.kit.Button
+import ui.desktop.kit.FloatButton
+import ui.desktop.kit.Icon
+import ui.desktop.kit.Typography
 
 class ButtonExample implements Widget {
   private Integer presses = 0

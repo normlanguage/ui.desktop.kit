@@ -82,37 +82,42 @@ public final class DisplayAdapter {
         return control.column(heading, value);
     }
 
-    public static <T> void tableColumns(Table<T> control, java.util.List<String> headings,
-            Function<T,java.util.List<String>> values) {
-        boolean sameSchema = control.getColumns().size() == headings.size();
-        if (sameSchema) for (int index = 0; index < headings.size(); index++)
-            if (!java.util.Objects.equals(control.getColumns().get(index).getText(), headings.get(index))) {
-                sameSchema = false;
-                break;
-            }
-        if (sameSchema) {
-            for (int index = 0; index < headings.size(); index++) {
-                int columnIndex = index;
-                @SuppressWarnings("unchecked")
-                var column = (TableColumn<T,String>) control.getColumns().get(index);
-                column.setCellValueFactory(cell -> new javafx.beans.property.ReadOnlyObjectWrapper<>(
-                        values.apply(cell.getValue()).get(columnIndex)));
-            }
-            control.refresh();
-            return;
+    public static <T> void tableColumns(Table<T> control, java.util.List<TableColumnSpec<T>> specifications) {
+        var ids = new java.util.HashSet<String>();
+        for (var specification : specifications)
+            if (!ids.add(specification.id())) throw new IllegalArgumentException("Duplicate column id: " + specification.id());
+        var previous = new java.util.HashMap<String,TableColumn<T,?>>();
+        for (var column : control.getColumns()) previous.put(column.getId(), column);
+        var next = new java.util.ArrayList<TableColumn<T,?>>();
+        for (var specification : specifications) {
+            @SuppressWarnings("unchecked")
+            var column = (TableColumn<T,T>) previous.get(specification.id());
+            if (column == null) column = new TableColumn<>();
+            column.setId(specification.id());
+            column.setText(specification.heading());
+            column.setCellValueFactory(cell -> new javafx.beans.property.ReadOnlyObjectWrapper<>(cell.getValue()));
+            column.setSortable(specification.comparator() != null);
+            if (specification.comparator() != null) column.setComparator(specification.comparator());
+            var previousSpec = column.getProperties().put(TableColumnSpec.class, specification);
+            var stableColumn = column;
+            if (!(previousSpec instanceof TableColumnSpec<?> old) || old.widget() != specification.widget())
+                column.setCellFactory(ignored -> specification.widget() ? control.widgetCell(specification.id()) : new javafx.scene.control.TableCell<>() {
+                @Override protected void updateItem(T row, boolean empty) {
+                    super.updateItem(row, empty);
+                    @SuppressWarnings("unchecked")
+                    var latest = (TableColumnSpec<T>) stableColumn.getProperties().get(TableColumnSpec.class);
+                    setText(empty || row == null ? null : latest.display().apply(row));
+                    setGraphic(null);
+                }
+            });
+            next.add(column);
         }
-        String sortedHeading = control.getSortOrder().isEmpty() ? null : control.getSortOrder().getFirst().getText();
-        var sortedDirection = control.getSortOrder().isEmpty() ? null : control.getSortOrder().getFirst().getSortType();
-        control.getSortOrder().clear();
-        control.getColumns().clear();
-        for (int index = 0; index < headings.size(); index++) {
-            int columnIndex = index;
-            var column = control.column(headings.get(index), row -> values.apply(row).get(columnIndex));
-            if (column.getText().equals(sortedHeading)) {
-                column.setSortType(sortedDirection);
-                control.getSortOrder().add(column);
-            }
-        }
+        var order = new java.util.ArrayList<>(control.getSortOrder());
+        order.removeIf(column -> !next.contains(column) || !column.isSortable());
+        if (!control.getColumns().equals(next)) control.getColumns().setAll(next);
+        control.getSortOrder().setAll(order);
+        control.sort();
+        control.refresh();
     }
 
     public static <T> void treeChildren(Tree<T> control, Function<T,java.util.List<T>> children) {

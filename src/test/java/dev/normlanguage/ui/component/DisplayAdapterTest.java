@@ -49,13 +49,12 @@ class DisplayAdapterTest extends FxTest {
             table.getSortOrder().add(column);
             table.sort();
             assertEquals(List.of("Alpha", "Beta"), table.getItems());
-            DisplayAdapter.tableColumns(table, List.of("Name"), row -> List.of(row.toUpperCase()));
-            assertEquals("Name", table.getSortOrder().getFirst().getText());
-            assertEquals("ALPHA", table.getColumns().getFirst().getCellData("Alpha"));
+            DisplayAdapter.tableColumns(table, List.of(new TableColumnSpec<>("name", "Name", String::toUpperCase, String::compareTo, false)));
             var stable = table.getColumns().getFirst();
-            DisplayAdapter.tableColumns(table, List.of("Name"), row -> List.of(row.toLowerCase()));
+            DisplayAdapter.tableColumns(table, List.of(new TableColumnSpec<>("name", "姓名", String::toLowerCase, String::compareTo, false)));
             assertSame(stable, table.getColumns().getFirst());
-            assertEquals("alpha", table.getColumns().getFirst().getCellData("Alpha"));
+            assertEquals("姓名", stable.getText());
+            assertEquals("Alpha", stable.getCellData("Alpha"));
         });
     }
 

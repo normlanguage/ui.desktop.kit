@@ -1,0 +1,34 @@
+package ui.desktop.kit.test.creation
+
+import ui.desktop.nativeComponent
+import std.testing.Test
+import std.core.Exception
+import ui.Renderer
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
+import ui.desktop.FxApplication
+import ui.desktop.withFxRuntime
+
+class CreationState { Integer released = 0 Boolean failed = false }
+
+@Test
+Void releasesControlWhenNodeProjectionFails() {
+  var state = CreationState()
+  withFxRuntime(() {
+    var application = FxApplication("Component creation verification")
+    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+    application.run(build: () {
+      try {
+        renderer.render(nativeComponent<CreationState>(kind: "failing-projection",
+          create: () { state },
+          node: (control) { throw Exception(message: "projection failed") },
+          update: (control, scope) {},
+          close: (control) { control.released = control.released + 1 }))
+      } catch Exception failure {
+        state.failed = true
+      } finally { application.close() }
+    }, dispose: renderer.close)
+  })
+  require(condition: state.failed && state.released == 1,
+    message: "A failed node projection releases its initialized control exactly once")
+}

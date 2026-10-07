@@ -21,7 +21,7 @@ jobs:
           lfs: true
       - uses: normlanguage/registry/.github/actions/setup-norm@549b0746e992a9c6c698b3c701fa2dd88cccdd4b
         with:
-          source-ref: 02691fed8b6906cc69ef6d21b6e9edd61930981d
+          source-ref: 00589dd5f1a457ed756f0dc163772e1cb42ffa1c
       - uses: actions/setup-java@v4
         with:
           distribution: oracle
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: normlanguage/ui
-          ref: v8
+          ref: v9
           path: .tmp/ui
       - name: Build component artifact
         shell: pwsh
@@ -42,7 +42,7 @@ jobs:
       - uses: normlanguage/registry/.github/actions/package-module@1c5b2948a0c788f1aa21542255eb1a445027ab29
         id: package
         with:
-          module-path: ui/fx/kit
+          module-path: ui/desktop/kit
           cache-directory: ~/.norm/cache/packages/github
       - name: Verify JavaFX components and theme rendering
         shell: pwsh
@@ -52,9 +52,13 @@ jobs:
       - name: Verify component lifecycle and gallery
         shell: bash
         run: |
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.tabs
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.creation
-          timeout 300 norm test ui/fx/kit --filter ui.fx.kit.test.inputs
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.tabs
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.creation
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.inputs
+          timeout 300 norm test ui/desktop/kit --filter ui.desktop.kit.test.display
+          timeout 300 norm test samples/tasks
+          timeout 300 norm test samples/orders
+          timeout 300 norm test samples/jobs
           timeout 300 norm test samples/gallery --filter gallery.test.catalog
           timeout 300 norm test samples/gallery --filter gallery.test.rendering
       - uses: actions/upload-artifact@v4

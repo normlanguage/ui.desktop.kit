@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.normlanguage"
-version = "2"
+version = "3"
 
 repositories { mavenCentral() }
 
@@ -41,12 +41,12 @@ val gallery = sourceSets.create("gallery") {
 }
 sourceSets.test { compileClasspath += gallery.output; runtimeClasspath += gallery.output }
 val galleryJar = tasks.register<Jar>("galleryJar") {
-    archiveBaseName.set("ui-fx-gallery")
-    archiveVersion.set("1")
+    archiveBaseName.set("ui-desktop-gallery")
+    archiveVersion.set("2")
     includeEmptyDirs = false
     from(gallery.output)
     from("samples/gallery") { include("**/*.norm"); exclude("tests/**", "module.norm"); into("norm-source/samples/gallery") }
-    from("ui/fx/kit") { include("**/*.norm"); exclude("module.norm"); exclude("tests/**"); into("norm-source/ui/fx/kit") }
+    from("ui/desktop/kit") { include("**/*.norm"); exclude("module.norm"); exclude("tests/**"); into("norm-source/ui/desktop/kit") }
     val uiRoot = providers.gradleProperty("uiRoot").orElse("")
     doFirst {
         require(uiRoot.get().isNotBlank()) { "galleryJar requires -PuiRoot=<ui source repository>" }
@@ -86,13 +86,13 @@ publishing {
     publications {
         create<MavenPublication>("library") { from(components["java"]) }
         create<MavenPublication>("gallery") {
-            artifactId = "ui-fx-gallery"
-            version = "1"
+            artifactId = "ui-desktop-gallery"
+            version = "2"
             artifact(galleryJar)
             pom.withXml {
                 val dependency = asNode().appendNode("dependencies").appendNode("dependency")
                 dependency.appendNode("groupId", project.group)
-                dependency.appendNode("artifactId", "ui-fx-kit")
+                dependency.appendNode("artifactId", "ui-desktop-kit")
                 dependency.appendNode("version", project.version)
             }
         }

@@ -5,8 +5,8 @@ import ui.Widget
 import ui.Text
 import ui.Column
 import ui.Row
-import ui.fx.kit.Button
-import ui.fx.kit.Divider
+import ui.desktop.kit.Button
+import ui.desktop.kit.Divider
 import ui.Flex
 import ui.FlexItem
 import ui.Grid
@@ -14,7 +14,7 @@ import ui.GridItem
 import ui.GridBreakpoint
 import ui.Dock
 import ui.Masonry
-import ui.fx.kit.Splitter
+import ui.desktop.kit.Splitter
 
 class DividerExample implements Widget {
   private Boolean vertical = false

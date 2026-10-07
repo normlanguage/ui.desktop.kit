@@ -1,0 +1,35 @@
+package ui.desktop.kit
+
+import ui.Widget
+import ui.Binding
+import ui.NodeKey
+import ui.desktop.kit.internal.NoticeHost
+import ui.desktop.kit.internal.noticeHostMessage
+import ui.desktop.kit.internal.noticeHostNotification
+
+value Message implements Widget {
+  String text
+  Binding<Boolean> open
+  Double duration = 3000.0
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<NoticeHost>(kind: "ui.desktop.kit.Message", create: () { noticeHostMessage()!! },
+      node: (control) { control }, update: (control, scope) {
+        control.update(arg0: text, arg1: duration, arg2: open.value, arg3: scope.bind(() { open.value = false }))
+      }, close: (control) { control.close() }, key: key)
+  }
+}
+
+value Notification implements Widget {
+  String title
+  Widget content
+  Binding<Boolean> open
+  NodeKey? key = null
+  Widget build() {
+    nativeComponent<NoticeHost>(kind: "ui.desktop.kit.Notification", create: () { noticeHostNotification()!! },
+      node: (control) { control }, update: (control, scope) {
+        control.update(arg0: title, arg1: 3000.0, arg2: open.value, arg3: scope.bind(() { open.value = false }))
+      }, children: [content], arrange: (control, nodes) { control.content(nodes[0]) },
+      close: (control) { control.close() }, key: key)
+  }
+}

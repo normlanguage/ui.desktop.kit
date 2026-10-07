@@ -1,0 +1,49 @@
+package orders
+
+import java.base.math.BigDecimal
+import java.base.math.bigDecimalNew
+import std.core.Exception
+
+enum OrderStatus { Pending, Paid, Shipped }
+
+value Order {
+  String id
+  String customer
+  BigDecimal total
+  OrderStatus status
+}
+
+class OrderBook {
+  List<Order> orders = [
+    Order(id: "SO-1042", customer: "林木工作室", total: bigDecimalNew("1280.50")!!, status: OrderStatus.Pending),
+    Order(id: "SO-1041", customer: "北岸设计", total: bigDecimalNew("9800.00")!!, status: OrderStatus.Paid),
+    Order(id: "SO-1040", customer: "青山贸易", total: bigDecimalNew("240.00")!!, status: OrderStatus.Shipped),
+    Order(id: "SO-1039", customer: "光合空间", total: bigDecimalNew("72.90")!!, status: OrderStatus.Pending),
+    Order(id: "SO-1038", customer: "纸间文化", total: bigDecimalNew("2.00")!!, status: OrderStatus.Paid),
+    Order(id: "SO-1037", customer: "河畔商店", total: bigDecimalNew("10.00")!!, status: OrderStatus.Pending)
+  ]
+
+  List<Order> filter(String query, Boolean pendingOnly) {
+    [for (order : orders) if ((!pendingOnly || order.status == OrderStatus.Pending) &&
+      (query == "" || order.id.contains(value: query) || order.customer.contains(value: query))) order]
+  }
+
+  Void save(Order replacement) {
+    if replacement.customer.trim() == "" || replacement.total.compareTo(arg0: bigDecimalNew("0")!!) < 0 {
+      throw Exception(message: "订单客户和金额无效")
+    }
+    List<Order> matches = [for (order : orders) if (order.id == replacement.id) order]
+    if matches.isEmpty() {
+      throw Exception(message: "订单不存在")
+    }
+    orders = [for (order : orders) if order.id == replacement.id { replacement } else { order }]
+  }
+}
+
+String orderStatusLabel(OrderStatus status) {
+  switch status {
+    case Pending { break "待付款" }
+    case Paid { break "已付款" }
+    case Shipped { break "已发货" }
+  }
+}

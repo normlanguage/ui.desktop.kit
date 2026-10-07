@@ -1,0 +1,135 @@
+package tasks.test.workflow
+
+import std.testing.Test
+import std.filesystem.Path
+import std.filesystem.writeTextAtomic
+import std.filesystem.readText
+import std.io.TextEncoding
+import ui.Renderer
+import ui.desktop.FxApplication
+import ui.desktop.JavaFxBackend
+import ui.desktop.JavaFxScheduler
+import ui.desktop.fxHandle
+import ui.desktop.withFxRuntime
+import ui.desktop.native.Scene
+import ui.desktop.native.Button
+import ui.desktop.native.TextField
+import std.core.Exception
+import ui.theme.ThemeManager
+import ui.theme.ThemeDefinition
+import ui.theme.Color
+import tasks.TaskBoard
+import tasks.TaskStore
+import tasks.TaskSnapshot
+
+class Verification { Boolean completed = false }
+
+@Test
+Void addsTwoRecordsWithTheSameTitle() {
+  var store = TaskStore(file: Path(value: "build/acceptance/tasks-duplicates.json"))
+  store.save(TaskSnapshot())
+  var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#2563EB")))
+  try {
+    var board = TaskBoard(theme: theme, store: store)
+    board.init()
+    board.draft = "Identical title"
+    board.add()
+    require(condition: board.items.size() == 1, message: "First task added")
+    board.draft = "Identical title"
+    board.add()
+    require(condition: board.items.size() == 2, message: "Second task added")
+    require(condition: board.items[0].id != board.items[1].id, message: "Both model records have distinct IDs")
+  } finally { theme.close() }
+}
+
+@Test
+Void failedSaveKeepsTheDraftDirty() {
+  var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#2563EB")))
+  try {
+    writeTextAtomic(path: Path(value: "build/acceptance/tasks-blocker"), text: "file", encoding: TextEncoding.Utf8)
+    var working = TaskStore(file: Path(value: "build/acceptance/tasks-before-failure.json"))
+    working.save(TaskSnapshot())
+    var board = TaskBoard(theme: theme, store: working)
+    board.init()
+    board.draft = "Keep this task"
+    board.add()
+    board.store = TaskStore(file: Path(value: "build/acceptance/tasks-blocker/child.json"))
+    require(condition: !board.save() && board.dirty && board.items.size() == 1 && board.status != "", message: "A failed save preserves the in-memory task and unsaved state")
+  } finally { theme.close() }
+}
+
+@Test
+Void failedLoadCannotOverwriteTheOriginalDocument() {
+  var file = Path(value: "build/acceptance/tasks-malformed.json")
+  writeTextAtomic(path: file, text: "broken JSON", encoding: TextEncoding.Utf8)
+  var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#2563EB")))
+  try {
+    var board = TaskBoard(theme: theme, store: TaskStore(file: file))
+    board.init()
+    board.draft = "Must not replace existing data"
+    board.add()
+    require(condition: !board.save() && board.items.isEmpty(), message: "Failed loading blocks edits and persistence")
+    require(condition: readText(path: file, encoding: TextEncoding.Utf8, maximumBytes: 100) == "broken JSON", message: "Failed loading preserves the original file")
+  } finally { theme.close() }
+}
+
+@Test
+Void nativeActionsPersistDuplicateTitlesWithDistinctIdentity() {
+  withFxRuntime(() {
+    var store = TaskStore(file: Path(value: "build/acceptance/tasks-window.json"))
+    store.save(TaskSnapshot())
+    var theme = ThemeManager(ThemeDefinition(primary: Color(hex: "#2563EB")))
+    var application = FxApplication("Task workflow")
+    var renderer = Renderer(backend: JavaFxBackend(application), scheduler: JavaFxScheduler(application))
+    var board = TaskBoard(theme: theme, store: store)
+    var verification = Verification()
+    application.run(build: () {
+      renderer.render(board)
+      application.root(fxHandle(renderer.node()))
+      application.later(() {
+        enter(scene: application.scene(), text: "Identical title")
+        application.later(() {
+          require(condition: board.draft == "Identical title", message: "Native input writes the draft")
+          fire(scene: application.scene(), id: "task-add")
+          application.later(() {
+            require(condition: board.items.size() == 1 && board.draft == "", message: "First native action adds and clears input")
+            enter(scene: application.scene(), text: "Identical title")
+            application.later(() {
+              require(condition: board.draft == "Identical title", message: "Native input writes the repeated title")
+              fire(scene: application.scene(), id: "task-add")
+              application.later(() {
+                require(condition: board.items.size() == 2, message: "Both native add actions create a task")
+                require(condition: board.items[0].id != board.items[1].id, message: "Duplicate titles have distinct stable IDs")
+                board.complete(id: board.items[0].id, completed: true)
+                application.later(() {
+                  try {
+                    fire(scene: application.scene(), id: "task-save")
+                    require(condition: !board.dirty && store.load().items == board.items, message: "Native save persists the current state")
+                    board.remove(board.items[0].id)
+                    require(condition: board.dirty && board.items.size() == 1, message: "Deleting marks state unsaved")
+                    verification.completed = true
+                  } finally { application.close() }
+                })
+              })
+            })
+          })
+        })
+      })
+    }, dispose: () { renderer.close() theme.close() })
+    require(condition: verification.completed, message: "Task window verification completed")
+  })
+}
+
+Void fire(Scene scene, String id) {
+  switch scene.lookup("#" + id) {
+    case Button button { require(condition: !button.isDisabled(), message: "Action is available: " + id) button.fire() }
+    case _ { throw Exception(message: "Missing button: " + id) }
+  }
+}
+
+Void enter(Scene scene, String text) {
+  switch scene.lookup("#task-title") {
+    case TextField input { require(condition: input.getText() == "", message: "Adding clears the native title input") input.setText(text) }
+    case _ { throw Exception(message: "Missing task title input") }
+  }
+}
