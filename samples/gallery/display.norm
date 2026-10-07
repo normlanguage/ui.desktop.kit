@@ -1,6 +1,7 @@
 package gallery
 
 import ui.CrossAlignment
+import ui.ValueKey
 import ui.Widget
 import ui.Text
 import ui.Column as Vertical
@@ -166,7 +167,7 @@ class ListyExample implements Widget {
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
     Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
-      Listy<String>(items: ["记录 01", "记录 02", "记录 03", "记录 04", "记录 05", "记录 06", "记录 07", "记录 08",
+      Listy<String>(identity: (String value) { ValueKey<String>(value) }, row: (String value) { Text(value) }, items: ["记录 01", "记录 02", "记录 03", "记录 04", "记录 05", "记录 06", "记录 07", "记录 08",
         "记录 09", "记录 10", "记录 11", "记录 12", "记录 13", "记录 14", "记录 15", "记录 16"], rowHeight: height, selected: selection)
       Text("当前选择：" + if selected == null { "无" } else { selected!! })
       ActionButton(text: if height == 32.0 { "切换宽松行高" } else { "切换紧凑行高" }, action: () { height = if height == 32.0 { 48.0 } else { 32.0 } })
@@ -212,20 +213,20 @@ class StatisticExample implements Widget {
 class TableExample implements Widget {
   Boolean showPending = true
   String? selected = null
-  TableSort? sorted = TableSort(heading: "成员", descending: false)
+  TableSort? sorted = TableSort(columnId: "member", descending: false)
 
   Widget build() {
     Binding<String?> selection = Binding<String?>(read: () { selected }, write: (String? next) { selected = next })
     Binding<TableSort?> order = Binding<TableSort?>(read: () { sorted }, write: (TableSort? next) { sorted = next })
     Vertical(cross: CrossAlignment.Stretch, gap: 12.0) {
       Table<String>(rows: if showPending { ["Alice", "Bob", "Charlie"] } else { ["Alice", "Charlie"] },
-        columns: [DataColumn<String>(heading: "成员", display: (String row) { row }),
-          DataColumn<String>(heading: "角色", display: (String row) { if row == "Alice" { "设计" } else { "开发" } })],
+        columns: [DataColumn<String>(id: "member", heading: "成员", compare: (String left, String right) { if left == right { 0 } else { if left < right { -1 } else { 1 } } }, display: (String row) { row }),
+          DataColumn<String>(id: "role", heading: "角色", display: (String row) { if row == "Alice" { "设计" } else { "开发" } })],
         selected: selection, sort: order)
       Text("选中成员：" + if selected == null { "无" } else { selected!! })
       Text("排序：" + if sorted == null { "未排序" } else { if sorted!!.descending { "降序" } else { "升序" } })
       ActionButton(text: "反转排序", action: () {
-        sorted = TableSort(heading: "成员", descending: if sorted == null { false } else { !sorted!!.descending })
+        sorted = TableSort(columnId: "member", descending: if sorted == null { false } else { !sorted!!.descending })
       })
       ActionButton(text: if showPending { "隐藏待处理成员" } else { "显示全部成员" }, action: () { showPending = !showPending })
     }

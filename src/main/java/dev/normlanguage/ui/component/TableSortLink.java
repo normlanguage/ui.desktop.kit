@@ -8,7 +8,6 @@ import javafx.scene.control.TableColumn;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public final class TableSortLink<T> implements AutoCloseable {
     private final Table<T> table;
@@ -28,11 +27,11 @@ public final class TableSortLink<T> implements AutoCloseable {
         observe();
     }
 
-    public void columns(List<String> headings, Function<T,List<String>> values) {
+    public void columns(List<TableColumnSpec<T>> columns) {
         Util.requireFxThread();
         if (closed) throw new IllegalStateException("Sort link is closed");
         suspended = true;
-        try { DisplayAdapter.tableColumns(table, headings, values); }
+        try { DisplayAdapter.tableColumns(table, columns); }
         finally { suspended = false; }
         observe();
     }
@@ -49,14 +48,15 @@ public final class TableSortLink<T> implements AutoCloseable {
             return;
         }
         for (var column : table.getColumns()) {
-            if (Objects.equals(column.getText(), sort.heading())) {
+            if (Objects.equals(column.getId(), sort.columnId())) {
+                if (!column.isSortable()) throw new IllegalArgumentException("Column is not sortable: " + sort.columnId());
                 column.setSortType(sort.descending() ? TableColumn.SortType.DESCENDING : TableColumn.SortType.ASCENDING);
                 table.getSortOrder().setAll(column);
                 table.sort();
                 return;
             }
         }
-        throw new IllegalArgumentException("Unknown sort column: " + sort.heading());
+        throw new IllegalArgumentException("Unknown sort column: " + sort.columnId());
     }
 
     private void observe() {
@@ -68,7 +68,7 @@ public final class TableSortLink<T> implements AutoCloseable {
 
     private void publish() {
         if (suspended) return;
-        var next = observed == null ? null : new TableSortState(observed.getText(),
+        var next = observed == null ? null : new TableSortState(observed.getId(),
                 observed.getSortType() == TableColumn.SortType.DESCENDING);
         if (!Objects.equals(current.get(), next)) current.set(next);
     }
