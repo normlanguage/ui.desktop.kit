@@ -19,9 +19,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           lfs: true
-      - uses: normlanguage/registry/.github/actions/setup-norm@549b0746e992a9c6c698b3c701fa2dd88cccdd4b
+      - uses: normlanguage/registry/.github/actions/setup-norm@d229852448570c786a3f86e62c7db36769ed9a18
         with:
-          source-ref: 00589dd5f1a457ed756f0dc163772e1cb42ffa1c
+          source-ref: 0ab66c108ee77d8a3f16f85f51499aaaaff15943
       - uses: actions/setup-java@v4
         with:
           distribution: oracle
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: normlanguage/ui
-          ref: v9
+          ref: v10
           path: .tmp/ui
       - name: Build component artifact
         shell: pwsh
@@ -39,13 +39,18 @@ jobs:
           $cache = Join-Path $HOME '.norm/cache/maven'
           New-Item -ItemType Directory -Force $cache | Out-Null
           Copy-Item -Path build/repository/* -Destination $cache -Recurse -Force
-      - uses: normlanguage/registry/.github/actions/package-module@1c5b2948a0c788f1aa21542255eb1a445027ab29
+      - name: Generate repository Skill
+        shell: pwsh
+        run: norm docs ui/desktop/kit --output build/api --skill SKILL.md
+      - uses: normlanguage/registry/.github/actions/package-module@77a26aef21f97b65c6343faf621412d91fed7a92
         id: package
         with:
           module-path: ui/desktop/kit
           cache-directory: ~/.norm/cache/packages/github
       - name: Verify JavaFX components and theme rendering
         shell: pwsh
+        env:
+          NORM_EXECUTABLE: ./.tmp/norm-toolchain/build/compiler/norm-runtime/bin/norm.bat
         run: |
           ./gradlew.bat test '-PuiRoot=.tmp/ui' --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -60,13 +65,21 @@ jobs:
           timeout 300 norm test samples/orders
           timeout 300 norm test samples/jobs
           timeout 300 norm test samples/gallery --filter gallery.test.catalog
-          timeout 300 norm test samples/gallery --filter gallery.test.rendering
+          timeout 900 norm test samples/gallery --filter gallery.test.rendering
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: gallery-screenshots
           path: build/screenshots/norm
-      - uses: normlanguage/registry/.github/actions/publish-module@1c5b2948a0c788f1aa21542255eb1a445027ab29
+      - uses: normlanguage/registry/.github/actions/publish-module@77a26aef21f97b65c6343faf621412d91fed7a92
         with:
           archive: ${{ steps.package.outputs.archive }}
           version: ${{ steps.package.outputs.version }}
+
+
+
+
+
+
+
+

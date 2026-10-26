@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "dev.normlanguage"
-version = "3"
+version = "4"
 
 repositories { mavenCentral() }
 
@@ -103,3 +103,4 @@ tasks.register<Copy>("normDependencies") {
     from(configurations.runtimeClasspath)
     into(layout.buildDirectory.dir("norm-dependencies"))
 }
+

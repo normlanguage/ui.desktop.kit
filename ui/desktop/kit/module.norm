@@ -1,9 +1,9 @@
 Module module() {
-  module(name: "ui.desktop.kit", version: 7,
+  module(name: "ui.desktop.kit", version: 8,
     exports: ["general", "inputs", "form", "layout", "navigation", "display", "feedback", "configuration", "status", "notices", "component_bridge"],
-    dependencies: [dependency(repository: "github", name: "ui", version: 9), dependency(repository: "github", name: "ui.desktop", version: 7), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "ui.theme", version: 3)],
+    dependencies: [dependency(repository: "github", name: "ui", version: 10), dependency(repository: "github", name: "ui.desktop", version: 8), dependency(repository: "norm", name: "java.base", version: 1), dependency(repository: "github", name: "ui.theme", version: 4)],
     binding: jarBinding(
-      target: mavenJar(group: "dev.normlanguage", artifact: "ui-desktop-kit", version: "3", resolution: sha256("7c7796ee77009872ecf048ade491667248bd40a427da970964c1df1ffe2c88ca")),
+      target: mavenJar(group: "dev.normlanguage", artifact: "ui-desktop-kit", version: "4", resolution: sha256("17d52c872c9bbacd01aebb6150e2d0499b3e1744a1b4af4ee58f50dfbfd26456")),
       api: [
         jarType(name: "dev.normlanguage.ui.component.KitEnvironment", alias: "internal.KitEnvironment", members: ["apply", "clear"]),
         jarType(name: "dev.normlanguage.ui.component.Upload.Item", alias: "internal.UploadItem", members: ["getFile", "getStatus", "getProgress", "statusProperty", "progressProperty"]),
@@ -113,3 +113,9 @@ Module module() {
         jarType(name: "dev.normlanguage.ui.component.TreeCheckLink", alias: "internal.TreeCheckLink", members: ["new", "update", "unbind", "close"])
       ]))
 }
+
+
+
+
+
+
