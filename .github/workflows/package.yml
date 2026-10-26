@@ -50,7 +50,8 @@ jobs:
       - name: Verify JavaFX components and theme rendering
         shell: pwsh
         env:
-          NORM_EXECUTABLE: ./.tmp/norm-toolchain/build/compiler/norm-runtime/bin/norm.bat`r`n        run: |
+          NORM_EXECUTABLE: ./.tmp/norm-toolchain/build/compiler/norm-runtime/bin/norm.bat
+        run: |
           ./gradlew.bat test '-PuiRoot=.tmp/ui' --console=plain
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify component lifecycle and gallery
@@ -74,6 +75,7 @@ jobs:
         with:
           archive: ${{ steps.package.outputs.archive }}
           version: ${{ steps.package.outputs.version }}
+
 
 
 
