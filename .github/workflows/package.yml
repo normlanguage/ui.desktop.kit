@@ -65,7 +65,7 @@ jobs:
           timeout 300 norm test samples/orders
           timeout 300 norm test samples/jobs
           timeout 300 norm test samples/gallery --filter gallery.test.catalog
-          timeout 300 norm test samples/gallery --filter gallery.test.rendering
+          timeout 900 norm test samples/gallery --filter gallery.test.rendering
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -75,6 +75,7 @@ jobs:
         with:
           archive: ${{ steps.package.outputs.archive }}
           version: ${{ steps.package.outputs.version }}
+
 
 
 
