@@ -1,5 +1,7 @@
 # ui.desktop.kit
 
+本项目使用 [Norm](https://github.com/normlanguage/Norm) 构建。
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 基于 [ui](https://github.com/normlanguage/ui)、[ui.desktop](https://github.com/normlanguage/ui.desktop)和 [ui.theme](https://github.com/normlanguage/ui.theme)的 JavaFX 组件库。
