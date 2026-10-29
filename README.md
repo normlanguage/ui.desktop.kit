@@ -1,5 +1,7 @@
 # ui.desktop.kit
 
+Built with [Norm](https://github.com/normlanguage/Norm).
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 JavaFX components built on [ui](https://github.com/normlanguage/ui), [ui.desktop](https://github.com/normlanguage/ui.desktop), and [ui.theme](https://github.com/normlanguage/ui.theme).
