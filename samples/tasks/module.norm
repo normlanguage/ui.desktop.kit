@@ -1,7 +1,7 @@
 Module module() {
   module(name: "tasks", version: 1, exports: ["application", "storage"], dependencies: [
-    dependency(repository: "github", name: "ui", version: 10),
-    dependency(repository: "github", name: "ui.desktop", version: 8),
-    dependency(repository: "github", name: "ui.desktop.kit", version: 8),
-    dependency(repository: "github", name: "ui.theme", version: 4)])
+    dependency(repository: "github", name: "ui", version: 11),
+    dependency(repository: "github", name: "ui.desktop", version: 9),
+    dependency(repository: "github", name: "ui.desktop.kit", version: 9),
+    dependency(repository: "github", name: "ui.theme", version: 5)])
 }

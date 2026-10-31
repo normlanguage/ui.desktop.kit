@@ -1,8 +1,8 @@
 Module module() {
   module(name: "orders", version: 1, exports: ["application", "model"],
-    dependencies: [dependency(repository: "github", name: "ui.desktop", version: 8),
-      dependency(repository: "github", name: "ui.desktop.kit", version: 8),
-      dependency(repository: "github", name: "ui", version: 10),
-      dependency(repository: "github", name: "ui.theme", version: 4),
+    dependencies: [dependency(repository: "github", name: "ui.desktop", version: 9),
+      dependency(repository: "github", name: "ui.desktop.kit", version: 9),
+      dependency(repository: "github", name: "ui", version: 11),
+      dependency(repository: "github", name: "ui.theme", version: 5),
       dependency(repository: "norm", name: "java.base", version: 1)])
 }

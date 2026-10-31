@@ -15,7 +15,7 @@ import ui.theme.Color
 import std.core.Exception
 
 Module module() {
-  module(dependencies: [dependency(repository: "github", name: "ui", version: 9), dependency(repository: "github", name: "ui.desktop", version: 7), dependency(repository: "github", name: "ui.theme", version: 3)])
+  module(dependencies: [dependency(repository: "github", name: "ui", version: 11), dependency(repository: "github", name: "ui.desktop", version: 9), dependency(repository: "github", name: "ui.theme", version: 5)])
 }
 
 class Verification { Boolean completed = false String? failure = null }
